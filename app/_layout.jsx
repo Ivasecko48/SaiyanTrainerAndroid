@@ -18,6 +18,8 @@ const RootLayout = () => {
       }}
     >
       <Stack.Screen name="index" options={{ title: 'Saiyan Trainer' }} />
+      <Stack.Screen name="meals" options={{ headerTitle: 'Big Man' }} />
+      <Stack.Screen name="training" options={{ headerTitle: 'Strong Boy' }} />
     </Stack>
   );
 };
