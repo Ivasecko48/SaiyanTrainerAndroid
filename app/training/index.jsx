@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import React from 'react';
 import { Modal } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 
 const TrainingScreen = () => {
   const [exercise, setExercise] = useState([
@@ -18,6 +19,10 @@ const TrainingScreen = () => {
   ]);
   const [modalVisible, setModalVisible] = useState(false);
   const [newExercise, setNewExercise] = useState('');
+  const [selectedReps, setSelectedReps] = useState(10);
+  const [selectedSets, setSelectedSets] = useState(3);
+  const [selectedRPE, setSelectedRPE] = useState(8.5);
+  const [selectedWeight, setSelectedWeight] = useState('');
 
   const renderHeader = () => (
     <View style={[styles.row, styles.header]}>
@@ -63,12 +68,82 @@ const TrainingScreen = () => {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Add a new exercise</Text>
             <TextInput
-              style={styles.input}
+              style={styles.textInput}
               placeholder="Enter exercise"
               placeholderTextColor="#aaa"
               value={newExercise}
               onChangeText={setNewExercise}
             />
+
+            <View style={styles.modalSelect}>
+              <Text style={styles.label}>Weight</Text>
+              <Picker
+                selectedValue={selectedWeight}
+                onValueChange={(itemValue) => setSelectedWeight(itemValue)}
+                style={styles.input}
+              >
+                {Array.from({ length: 11 }, (_, i) => (
+                  <Picker.Item
+                    key={i}
+                    label={(5 + i * 0.5).toFixed(1)}
+                    value={parseFloat((5 + i * 0.5).toFixed(1))}
+                  />
+                ))}
+              </Picker>
+            </View>
+
+            {/* RPE input */}
+            <View style={styles.modalSelect}>
+              <Text style={styles.label}>RPE</Text>
+              <Picker
+                selectedValue={selectedRPE}
+                onValueChange={(itemValue) => setSelectedRPE(itemValue)}
+                style={styles.input}
+              >
+                {Array.from({ length: 11 }, (_, i) => (
+                  <Picker.Item
+                    key={i}
+                    label={(5 + i * 0.5).toFixed(1)}
+                    value={parseFloat((5 + i * 0.5).toFixed(1))}
+                  />
+                ))}
+              </Picker>
+            </View>
+
+            <View style={styles.modalSelect}>
+              <Text style={styles.label}>Reps</Text>
+              <Picker
+                selectedValue={selectedReps}
+                onValueChange={(itemValue) => setSelectedReps(itemValue)}
+                style={styles.input}
+              >
+                {Array.from({ length: 11 }, (_, i) => (
+                  <Picker.Item
+                    key={i}
+                    label={(5 + i * 0.5).toFixed(1)}
+                    value={parseFloat((5 + i * 0.5).toFixed(1))}
+                  />
+                ))}
+              </Picker>
+            </View>
+
+            <View style={styles.modalSelect}>
+              <Text style={styles.label}>Sets</Text>
+              <Picker
+                selectedValue={selectedRPE}
+                onValueChange={(itemValue) => setSelectedSets(itemValue)}
+                style={styles.input}
+              >
+                {Array.from({ length: 11 }, (_, i) => (
+                  <Picker.Item
+                    key={i}
+                    label={(5 + i * 0.5).toFixed(1)}
+                    value={parseFloat((5 + i * 0.5).toFixed(1))}
+                  />
+                ))}
+              </Picker>
+            </View>
+
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={styles.cancelButton}
@@ -149,6 +224,15 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
   },
+  textInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 16,
+    marginBottom: 15,
+    marginRight: 12,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -183,6 +267,20 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: 16,
     color: '#fff',
+  },
+  modalSelect: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  label: {
+    flex: 1,
+    fontSize: 16,
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    height: 50,
   },
 });
 export default TrainingScreen;
