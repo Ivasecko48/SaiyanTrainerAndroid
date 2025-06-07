@@ -4,6 +4,7 @@ const ExerciseRender = ({ item }) => {
   return (
     <View style={styles.row}>
       <Text style={styles.cell}>{item.name}</Text>
+      <Text style={styles.cell}>{item.weight}</Text>
       <Text style={styles.cell}>{item.sets}</Text>
       <Text style={styles.cell}>{item.reps}</Text>
       <Text style={styles.cell}>{item.rpe}</Text>

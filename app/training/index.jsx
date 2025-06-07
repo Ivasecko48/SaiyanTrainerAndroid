@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,23 +6,39 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import React from 'react';
 import ExerciseRender from '@/components/ExerciseRender';
 import AddExerciseModal from '@/components/AddExerciseModal';
+import saiyanService from '@/services/saiyanService';
 
 const TrainingScreen = () => {
-  const [exercise, setExercise] = useState([
-    { id: '1', name: 'Bench Press', sets: 3, reps: 10, rpe: 8.5 },
-    { id: '2', name: 'Squat', sets: 4, reps: 8, rpe: 8.5 },
-    { id: '3', name: 'Deadlift', sets: 3, reps: 6, rpe: 8.5 },
-  ]);
+  const [exercise, setExercise] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [newExercise, setNewExercise] = useState('');
   const [selectedReps, setSelectedReps] = useState(10);
   const [selectedSets, setSelectedSets] = useState(3);
   const [selectedRPE, setSelectedRPE] = useState(8.5);
   const [selectedWeight, setSelectedWeight] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
+  useEffect(() => {
+    fetchExercises();
+  }, []);
+
+  const fetchExercises = async () => {
+    setLoading(true);
+    const response = await saiyanService.getExercises();
+
+    if (response.error) {
+      setError(response.error);
+      Alert.alert('ERror', response.error);
+    } else {
+      setExercise(response.data);
+      setError(null);
+    }
+
+    setLoading(false);
+  };
   // Add new Exercise
 
   const addExercise = () => {
@@ -47,6 +63,7 @@ const TrainingScreen = () => {
   const renderHeader = () => (
     <View style={[styles.row, styles.header]}>
       <Text style={styles.headerText}>Exercise</Text>
+      <Text style={styles.headerText}>Kgs</Text>
       <Text style={styles.headerText}>Sets</Text>
       <Text style={styles.headerText}>Reps</Text>
       <Text style={styles.headerText}>Rpe</Text>
@@ -55,11 +72,11 @@ const TrainingScreen = () => {
 
   return (
     <View style={styles.container}>
-      {renderHeader()}
       <FlatList
         data={exercise}
         renderItem={ExerciseRender}
         keyExtractor={(item) => item.id}
+        ListHeaderComponent={renderHeader}
       />
       <TouchableOpacity
         style={styles.addButton}
@@ -94,7 +111,13 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#fff',
   },
-
+  row: {
+    flexDirection: 'row',
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+    borderBottomWidth: 1,
+    borderColor: '#ddd',
+  },
   header: {
     backgroundColor: '#f0f0f0',
   },

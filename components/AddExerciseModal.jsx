@@ -59,12 +59,11 @@ const AddExerciseModal = ({
             </Picker>
           </View>
 
-          {/* RPE input */}
           <View style={styles.modalSelect}>
-            <Text style={styles.label}>RPE</Text>
+            <Text style={styles.label}>Sets</Text>
             <Picker
               selectedValue={selectedRPE}
-              onValueChange={(itemValue) => setSelectedRPE(itemValue)}
+              onValueChange={(itemValue) => setSelectedSets(itemValue)}
               style={styles.input}
             >
               {Array.from({ length: 11 }, (_, i) => (
@@ -94,11 +93,12 @@ const AddExerciseModal = ({
             </Picker>
           </View>
 
+          {/* RPE input */}
           <View style={styles.modalSelect}>
-            <Text style={styles.label}>Sets</Text>
+            <Text style={styles.label}>RPE</Text>
             <Picker
               selectedValue={selectedRPE}
-              onValueChange={(itemValue) => setSelectedSets(itemValue)}
+              onValueChange={(itemValue) => setSelectedRPE(itemValue)}
               style={styles.input}
             >
               {Array.from({ length: 11 }, (_, i) => (
