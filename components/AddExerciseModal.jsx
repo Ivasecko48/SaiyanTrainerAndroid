@@ -12,18 +12,22 @@ import React from 'react';
 const AddExerciseModal = ({
   modalVisible,
   setModalVisible,
-  newExercise,
-  setNewExercise,
+  NewExerciseName,
+  setNewExerciseName,
   selectedReps,
   setSelectedReps,
   selectedSets,
   setSelectedSets,
   selectedRPE,
   setSelectedRPE,
-  selectedWeight,
-  setSelectedWeight,
-  addExercise,
+  weight,
+  setWeight,
+  editingExercise,
+  setEditingExercise,
+  handleSave,
 }) => {
+  console.log('Editing exercise:', editingExercise);
+  console.log('newExerciseName:', NewExerciseName);
   return (
     <Modal
       visible={modalVisible}
@@ -33,36 +37,33 @@ const AddExerciseModal = ({
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Add a new exercise</Text>
+          <Text style={styles.modalTitle}>
+            {' '}
+            {editingExercise ? 'Edit Exercise' : 'Add Exercise'}
+          </Text>
           <TextInput
             style={styles.textInput}
             placeholder="Enter exercise"
             placeholderTextColor="#aaa"
-            value={newExercise}
-            onChangeText={setNewExercise}
+            value={NewExerciseName}
+            onChangeText={setNewExerciseName}
           />
 
           <View style={styles.modalSelect}>
             <Text style={styles.label}>Weight</Text>
-            <Picker
-              selectedValue={selectedWeight}
-              onValueChange={(itemValue) => setSelectedWeight(itemValue)}
-              style={styles.input}
-            >
-              {Array.from({ length: 11 }, (_, i) => (
-                <Picker.Item
-                  key={i}
-                  label={(5 + i * 0.5).toFixed(1)}
-                  value={parseFloat((5 + i * 0.5).toFixed(1))}
-                />
-              ))}
-            </Picker>
+            <TextInput
+              style={styles.textInput}
+              placeholder="Weight in kgs"
+              keyboardType="numeric"
+              value={weight}
+              onChangeText={setWeight}
+            />
           </View>
 
           <View style={styles.modalSelect}>
             <Text style={styles.label}>Sets</Text>
             <Picker
-              selectedValue={selectedRPE}
+              selectedValue={selectedSets}
               onValueChange={(itemValue) => setSelectedSets(itemValue)}
               style={styles.input}
             >
@@ -119,7 +120,7 @@ const AddExerciseModal = ({
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.saveButton} onPress={addExercise}>
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
               <Text style={styles.saveButtonText}>Save</Text>
             </TouchableOpacity>
           </View>
@@ -160,7 +161,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     fontSize: 16,
-    marginBottom: 15,
+    marginBottom: 12,
     marginRight: 12,
   },
   input: {

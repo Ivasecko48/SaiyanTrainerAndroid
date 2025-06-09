@@ -5,6 +5,8 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import ExerciseRender from '@/components/ExerciseRender';
 import AddExerciseModal from '@/components/AddExerciseModal';
@@ -13,13 +15,15 @@ import saiyanService from '@/services/saiyanService';
 const TrainingScreen = () => {
   const [exercise, setExercise] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [newExercise, setNewExercise] = useState('');
+  const [NewExerciseName, setNewExerciseName] = useState('');
   const [selectedReps, setSelectedReps] = useState(10);
   const [selectedSets, setSelectedSets] = useState(3);
   const [selectedRPE, setSelectedRPE] = useState(8.5);
-  const [selectedWeight, setSelectedWeight] = useState('');
+  const [weight, setWeight] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  //for editing
+  const [editingExercise, setEditingExercise] = useState(null);
 
   useEffect(() => {
     fetchExercises();
@@ -41,23 +45,74 @@ const TrainingScreen = () => {
   };
   // Add new Exercise
 
-  const addExercise = () => {
-    if (newExercise.trim() === '') return;
+  const handleSave = async () => {
+    if (NewExerciseName.trim() === '') return;
+    const newData = {
+      name: String(NewExerciseName).trim(),
+      weight: parseFloat(weight), // Ensure number
+      sets: selectedSets,
+      reps: selectedReps,
+      rpe: selectedRPE,
+    };
+    if (editingExercise) {
+      // Update existing
+      const updated = { ...editingExercise, name: NewExerciseName };
+      const response = await saiyanService.updateExercise(
+        editingExercise.$id,
+        updated
+      );
+      if (!response.error) {
+        setExercise((prev) =>
+          prev.map((e) => (e.$id === editingExercise.$id ? response.data : e))
+        );
+      }
+    } else {
+      console.log('Submitting:', newData, typeof newData.name);
 
-    setExercise((prevExercises) => [
-      ...prevExercises,
+      const response = await saiyanService.addExercise(newData);
+
+      if (response.error) {
+        Alert.alert('error', response.error);
+      } else {
+        setExercise([...exercise, response.data]);
+      }
+    }
+
+    setEditingExercise(null);
+    setNewExerciseName('');
+    setModalVisible(false);
+  };
+
+  //edit ex
+
+  const openEditModal = (exercise) => {
+    console.log('Opening modal to edit:', exercise);
+    setNewExerciseName(exercise.name); // Or whole object if you're editing more fields
+    setEditingExercise(exercise); // Save reference
+    setModalVisible(true);
+    console.log('Editing exercise3:', editingExercise);
+  };
+
+  //delete ex
+  const deleteExercise = async (id) => {
+    Alert.alert('Delete Exercise', 'Are you sure you want to delete?', [
       {
-        id: Date.now().toString(),
-        name: newExercise,
-        sets: selectedSets,
-        reps: selectedReps,
-        rpe: selectedRPE,
-        weight: selectedWeight,
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          const response = await saiyanService.deleteExercise(id);
+          if (response.error) {
+            Alert.alert('error', response.error);
+          } else {
+            setExercise(exercise.filter((exercise) => exercise.$id !== id));
+          }
+        },
       },
     ]);
-
-    setNewExercise('');
-    setModalVisible(false);
   };
 
   const renderHeader = () => (
@@ -67,17 +122,32 @@ const TrainingScreen = () => {
       <Text style={styles.headerText}>Sets</Text>
       <Text style={styles.headerText}>Reps</Text>
       <Text style={styles.headerText}>Rpe</Text>
+      <Text style={styles.deleteCell}></Text>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={exercise}
-        renderItem={ExerciseRender}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={renderHeader}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color="#fc7138" />
+      ) : (
+        <>
+          {error && <Text style={styles.errorText}>{error}</Text>}
+          <FlatList
+            data={exercise}
+            keyExtractor={(item) => item.$id}
+            renderItem={({ item }) => (
+              <ExerciseRender
+                item={item}
+                onDelete={deleteExercise}
+                onEdit={openEditModal}
+              />
+            )}
+            ListHeaderComponent={renderHeader}
+          />
+        </>
+      )}
+
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => setModalVisible(true)}
@@ -89,17 +159,19 @@ const TrainingScreen = () => {
       <AddExerciseModal
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
-        newExercise={newExercise}
-        setNewExercise={setNewExercise}
+        NewExerciseName={NewExerciseName}
+        setNewExerciseName={setNewExerciseName}
         selectedReps={selectedReps}
         setSelectedReps={setSelectedReps}
         selectedSets={selectedSets}
         setSelectedSets={setSelectedSets}
         selectedRPE={selectedRPE}
         setSelectedRPE={setSelectedRPE}
-        selectedWeight={selectedWeight}
-        setSelectedWeight={setSelectedWeight}
-        addExercise={addExercise}
+        weight={weight}
+        setWeight={setWeight}
+        editingExercise={editingExercise}
+        setEditingExercise={setEditingExercise}
+        handleSave={handleSave}
       />
     </View>
   );
@@ -127,6 +199,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  deleteCell: {
+    width: 15,
   },
   addButton: {
     position: 'absolute',
@@ -167,6 +242,12 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     marginRight: 10,
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    marginBottom: 10,
+    fontSize: 16,
   },
 });
 export default TrainingScreen;

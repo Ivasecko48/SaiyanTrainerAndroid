@@ -1,13 +1,21 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-const ExerciseRender = ({ item }) => {
+const ExerciseRender = ({ item, onDelete, onEdit }) => {
   return (
     <View style={styles.row}>
-      <Text style={styles.cell}>{item.name}</Text>
+      <Text onPress={() => onEdit(item)} style={styles.cell}>
+        {item.name}
+      </Text>
       <Text style={styles.cell}>{item.weight}</Text>
       <Text style={styles.cell}>{item.sets}</Text>
       <Text style={styles.cell}>{item.reps}</Text>
       <Text style={styles.cell}>{item.rpe}</Text>
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={() => onDelete(item.$id)}
+      >
+        <Text style={styles.deleteIcon}>✖️</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -23,6 +31,16 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
     fontSize: 16,
+  },
+  deleteIcon: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: 'purple',
+  },
+  deleteButton: {
+    width: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
