@@ -8,11 +8,16 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useAuth } from '@/contexts/AuthContext';
 import ExerciseRender from '@/components/ExerciseRender';
 import AddExerciseModal from '@/components/AddExerciseModal';
 import saiyanService from '@/services/saiyanService';
 
 const TrainingScreen = () => {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+
   const [exercise, setExercise] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [NewExerciseName, setNewExerciseName] = useState('');
@@ -20,18 +25,27 @@ const TrainingScreen = () => {
   const [selectedSets, setSelectedSets] = useState(3);
   const [selectedRPE, setSelectedRPE] = useState(8.5);
   const [weight, setWeight] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   //for editing
   const [editingExercise, setEditingExercise] = useState(null);
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    fetchExercises();
+    if (!authLoading && !user) {
+      router.replace('/auth');
+    }
+  }, [user, authLoading]);
+
+  useEffect(() => {
+    if (user) {
+      fetchExercises();
+    }
   }, []);
 
   const fetchExercises = async () => {
     setLoading(true);
-    const response = await saiyanService.getExercises();
+    const response = await saiyanService.getExercises(user.$id);
 
     if (response.error) {
       setError(response.error);
@@ -48,6 +62,7 @@ const TrainingScreen = () => {
   const handleSave = async () => {
     if (NewExerciseName.trim() === '') return;
     const newData = {
+      user_id: user.$id,
       name: String(NewExerciseName).trim(),
       weight: parseFloat(weight), // Ensure number
       sets: selectedSets,

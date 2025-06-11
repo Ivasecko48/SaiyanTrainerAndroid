@@ -7,23 +7,28 @@ const colId = process.env.EXPO_PUBLIC_APPWRITE_COL_NOTES_ID;
 
 const saiyanService = {
   //get exers
-  async getExercises() {
-    // if (!userId) {
-    //   console.error('Error; Missing userId in getExercise');
-    //   return {
-    //     data: [],
-    //     error: 'User ID is missing',
-    //   };
-    //
-    const response = await databaseService.listDocuments(dbId, colId);
-    if (response.error) {
-      return { error: response.error };
+  async getExercises(userId) {
+    if (!userId) {
+      console.error('Error; Missing userId in getExercise');
+      return {
+        data: [],
+        error: 'User ID is missing',
+      };
     }
-    return { data: response };
+
+    try {
+      const response = await databaseService.listDocuments(dbId, colId, [
+        Query.equal('user_id', userId),
+      ]);
+      return response;
+    } catch (error) {
+      console.log('Error fetching notes:', error.message);
+      return { data: [], error: error.message };
+    }
   },
 
   // Add new ex
-  async addExercise({ name, weight, sets, reps, rpe }) {
+  async addExercise({ user_id, name, weight, sets, reps, rpe }) {
     if (!name) {
       return { error: 'Exercise name cant be empty' };
     }
@@ -35,7 +40,7 @@ const saiyanService = {
       reps,
       rpe,
       createdAt: new Date().toISOString(),
-      //user_id: user_id,
+      user_id: user_id,
     };
 
     const response = await databaseService.createDocument(
