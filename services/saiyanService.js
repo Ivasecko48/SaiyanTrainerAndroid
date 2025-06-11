@@ -53,7 +53,7 @@ const saiyanService = {
   },
 
   //   // Update ex
-  async updateExercise(id, name, weight, sets, reps, rpe) {
+  async updateExercise({ id, name, weight, sets, reps, rpe }) {
     const response = await databaseService.updateDocument(dbId, colId, id, {
       name,
       weight,
@@ -68,6 +68,7 @@ const saiyanService = {
 
     return { data: response };
   },
+
   // Delete ex
   async deleteExercise(id) {
     const response = await databaseService.deleteDocument(dbId, colId, id);

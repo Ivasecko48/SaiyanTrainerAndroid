@@ -56,19 +56,18 @@ const TrainingScreen = () => {
     };
     if (editingExercise) {
       // Update existing
-      const updated = { ...editingExercise, name: NewExerciseName };
-      const response = await saiyanService.updateExercise(
-        editingExercise.$id,
-        updated
-      );
+
+      const response = await saiyanService.updateExercise({
+        id: editingExercise.$id,
+        ...newData,
+      });
+
       if (!response.error) {
         setExercise((prev) =>
           prev.map((e) => (e.$id === editingExercise.$id ? response.data : e))
         );
       }
     } else {
-      console.log('Submitting:', newData, typeof newData.name);
-
       const response = await saiyanService.addExercise(newData);
 
       if (response.error) {
@@ -86,11 +85,9 @@ const TrainingScreen = () => {
   //edit ex
 
   const openEditModal = (exercise) => {
-    console.log('Opening modal to edit:', exercise);
     setNewExerciseName(exercise.name); // Or whole object if you're editing more fields
     setEditingExercise(exercise); // Save reference
     setModalVisible(true);
-    console.log('Editing exercise3:', editingExercise);
   };
 
   //delete ex

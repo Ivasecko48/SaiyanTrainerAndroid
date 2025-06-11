@@ -26,8 +26,6 @@ const AddExerciseModal = ({
   setEditingExercise,
   handleSave,
 }) => {
-  console.log('Editing exercise:', editingExercise);
-  console.log('newExerciseName:', NewExerciseName);
   return (
     <Modal
       visible={modalVisible}
