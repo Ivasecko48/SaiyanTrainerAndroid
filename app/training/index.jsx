@@ -49,7 +49,7 @@ const TrainingScreen = () => {
 
     if (response.error) {
       setError(response.error);
-      Alert.alert('ERror', response.error);
+      Alert.alert('Errror', response.error);
     } else {
       setExercise(response.data);
       setError(null);
