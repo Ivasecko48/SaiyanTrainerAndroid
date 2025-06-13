@@ -43,7 +43,7 @@ const AuthScreen = () => {
       return;
     }
 
-    router.replace('/meals');
+    router.replace('../(screens)/trainingScreen');
   };
 
   return (

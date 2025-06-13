@@ -3,7 +3,7 @@ import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import { TouchableOpacity, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
-const HeaderLogout = () => {
+export const HeaderLogout = () => {
   const { user, logout } = useAuth();
 
   const logoutAlert = () => {
@@ -21,8 +21,11 @@ const HeaderLogout = () => {
   };
 
   return user ? (
-    <TouchableOpacity onPress={() => logoutAlert(logout)}>
-      <Feather name="log-out" size={24} color="black" />
+    <TouchableOpacity
+      onPress={() => logoutAlert(logout)}
+      style={{ paddingRight: 14 }}
+    >
+      <Feather name="log-out" size={24} color="white" />
     </TouchableOpacity>
   ) : null;
 };
@@ -48,8 +51,8 @@ const RootLayout = () => {
         }}
       >
         <Stack.Screen name="index" options={{ title: 'Saiyan Trainer' }} />
-        <Stack.Screen name="meals" options={{ headerTitle: 'Big Man' }} />
-        <Stack.Screen name="training" options={{ headerTitle: 'Strong Boy' }} />
+        <Stack.Screen name="auth" options={{ headerShown: false }} />
+        <Stack.Screen name="(screens)" options={{ headerShown: false }} />
       </Stack>
     </AuthProvider>
   );

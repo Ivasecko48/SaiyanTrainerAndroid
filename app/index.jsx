@@ -17,7 +17,7 @@ const HomeScreen = () => {
 
   useEffect(() => {
     if (!loading && user) {
-      router.replace('/training');
+      router.replace('/(screens)/trainingScreen');
     }
   }, [user, loading]);
 
@@ -41,7 +41,7 @@ const HomeScreen = () => {
 
       <TouchableOpacity
         style={styles.button}
-        onPress={() => router.push('/training')}
+        onPress={() => router.push('/auth')}
       >
         <Text style={styles.buttonText}>IT'S OVER 9000!!🔥</Text>
       </TouchableOpacity>
