@@ -1,34 +1,5 @@
 import { Stack } from 'expo-router';
-import { AuthProvider, useAuth } from '@/contexts/AuthContext';
-import { TouchableOpacity, Alert } from 'react-native';
-import { Feather } from '@expo/vector-icons';
-
-export const HeaderLogout = () => {
-  const { user, logout } = useAuth();
-
-  const logoutAlert = () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: logout,
-      },
-    ]);
-  };
-
-  return user ? (
-    <TouchableOpacity
-      onPress={() => logoutAlert(logout)}
-      style={{ paddingRight: 14 }}
-    >
-      <Feather name="log-out" size={24} color="white" />
-    </TouchableOpacity>
-  ) : null;
-};
+import { AuthProvider } from '@/contexts/AuthContext';
 
 const RootLayout = () => {
   return (
@@ -43,7 +14,6 @@ const RootLayout = () => {
             fontSize: 20,
             fontWeight: 'bold',
           },
-          headerRight: () => <HeaderLogout />,
           contentStyle: {
             padding: 0,
             backgroundColor: '#fff',

@@ -1,6 +1,35 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { HeaderLogout } from '../_layout';
+import { TouchableOpacity, Alert } from 'react-native';
+import { Feather } from '@expo/vector-icons';
+import { useAuth } from '@/contexts/AuthContext';
+
+const HeaderLogout = () => {
+  const { user, logout } = useAuth();
+
+  const logoutAlert = () => {
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: logout,
+      },
+    ]);
+  };
+
+  return user ? (
+    <TouchableOpacity
+      onPress={() => logoutAlert(logout)}
+      style={{ paddingRight: 14 }}
+    >
+      <Feather name="log-out" size={24} color="white" />
+    </TouchableOpacity>
+  ) : null;
+};
 
 export default function TabLayout() {
   return (

@@ -116,7 +116,7 @@ const TrainingScreen = () => {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
-          const response = await saiyanService.deleteExercise(id);
+          const response = await saiyanService.deleteExer(id);
           if (response.error) {
             Alert.alert('error', response.error);
           } else {

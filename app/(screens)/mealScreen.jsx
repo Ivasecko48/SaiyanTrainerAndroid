@@ -147,11 +147,7 @@ const MealsScreen = () => {
             data={meals}
             keyExtractor={(item) => item.$id}
             renderItem={({ item }) => (
-              <MealRender
-                item={item}
-                onDelete={deleteMeal}
-                onEdit={openEditModal}
-              />
+              <MealRender item={item} onDelete={deleteMeal} />
             )}
             ListHeaderComponent={renderHeader}
           />
