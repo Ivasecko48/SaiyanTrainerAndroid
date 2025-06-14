@@ -31,7 +31,7 @@ const saiyanService = {
   //get meals
   async getMeals(userId) {
     if (!userId) {
-      console.error('Error; Missing userId in getExercise');
+      console.error('Error; Missing userId in getMeals');
       return {
         data: [],
         error: 'User ID is missing',
@@ -39,7 +39,7 @@ const saiyanService = {
     }
 
     try {
-      const response = await databaseService.listDocuments(dbId, exerColId, [
+      const response = await databaseService.listDocuments(dbId, mealsColId, [
         Query.equal('user_id', userId),
       ]);
       return response;
@@ -81,13 +81,13 @@ const saiyanService = {
 
   //add new meal
 
-  async addMeal({ user_id, name, calories, protein }) {
-    if (!name) {
+  async addMeal({ user_id, mealName, calories, protein }) {
+    if (!calories) {
       return { error: 'Calories cant be null' };
     }
 
     const data = {
-      name,
+      mealName,
       calories,
       protein,
       createdAt: new Date().toISOString(),

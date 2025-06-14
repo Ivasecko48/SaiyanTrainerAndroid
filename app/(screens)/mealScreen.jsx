@@ -58,7 +58,7 @@ const MealsScreen = () => {
   //   Add new Meal
 
   const handleSave = async () => {
-    if (NewMealName.trim() === '') return;
+    if (calories === '') return;
     const newData = {
       user_id: user.$id,
       name: String(NewMealName).trim(),
@@ -160,11 +160,11 @@ const MealsScreen = () => {
         <Text style={styles.addButtonText}>+ Add Meal</Text>
       </TouchableOpacity>
       {/* Modal */}
-      {/* <AddMealModal
+      <AddMealModal
         modalVisible={modalVisible}
         setModalVisible={setModalVisible}
-        NewMealName={NewMealName}
-        setNewMealName={setNewMealName}
+        mealName={NewMealName}
+        setMealName={setNewMealName}
         protein={protein}
         setProtein={setProtein}
         calories={calories}
@@ -172,7 +172,7 @@ const MealsScreen = () => {
         editingMeal={editingMeal}
         setEditingMeal={setEditingMeal}
         handleSave={handleSave}
-      /> */}
+      />
     </View>
   );
 };

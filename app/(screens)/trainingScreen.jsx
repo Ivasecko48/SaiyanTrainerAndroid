@@ -94,6 +94,9 @@ const TrainingScreen = () => {
 
     setEditingExercise(null);
     setNewExerciseName('');
+    setSelectedSets('1');
+    setSelectedReps('1');
+    setSelectedRPE('5.0');
     setModalVisible(false);
   };
 
