@@ -1,13 +1,18 @@
 import {
   View,
   Text,
+  TextInput,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
 import { Modal } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import React from 'react';
+import ExerciseSelector from './ExerciseSelector';
 
 const AddExerciseModal = ({
   modalVisible,
@@ -33,97 +38,105 @@ const AddExerciseModal = ({
       transparent
       onRequestClose={() => setModalVisible(false)}
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>
-            {' '}
-            {editingExercise ? 'Edit Exercise' : 'Add Exercise'}
-          </Text>
-          <TextInput
-            style={styles.textInput}
-            placeholder="Enter exercise"
-            placeholderTextColor="#aaa"
-            value={NewExerciseName}
-            onChangeText={setNewExerciseName}
-          />
-
-          <View style={styles.modalSelect}>
-            <Text style={styles.label}>Weight</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Weight in kgs"
-              keyboardType="numeric"
-              value={weight}
-              onChangeText={setWeight}
-            />
-          </View>
-
-          <View style={styles.modalSelect}>
-            <Text style={styles.label}>Sets</Text>
-            <Picker
-              selectedValue={selectedSets}
-              onValueChange={(itemValue) => setSelectedSets(itemValue)}
-              style={styles.input}
-            >
-              {Array.from({ length: 11 }, (_, i) => (
-                <Picker.Item
-                  key={i}
-                  label={(5 + i * 0.5).toFixed(1)}
-                  value={parseFloat((5 + i * 0.5).toFixed(1))}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>
+                  {' '}
+                  {editingExercise ? 'Edit Exercise' : 'Add Exercise'}
+                </Text>
+                <ExerciseSelector
+                  onSelect={(selectedName) => {
+                    setNewExerciseName(selectedName);
+                  }}
                 />
-              ))}
-            </Picker>
-          </View>
-
-          <View style={styles.modalSelect}>
-            <Text style={styles.label}>Reps</Text>
-            <Picker
-              selectedValue={selectedReps}
-              onValueChange={(itemValue) => setSelectedReps(itemValue)}
-              style={styles.input}
-            >
-              {Array.from({ length: 11 }, (_, i) => (
-                <Picker.Item
-                  key={i}
-                  label={(5 + i * 0.5).toFixed(1)}
-                  value={parseFloat((5 + i * 0.5).toFixed(1))}
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Unesi ili potvrdi naziv vježbe"
+                  value={NewExerciseName}
+                  onChangeText={setNewExerciseName}
                 />
-              ))}
-            </Picker>
-          </View>
+                <View style={styles.modalSelect}>
+                  <Text style={styles.label}>Weight</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder="Weight in kgs"
+                    keyboardType="numeric"
+                    value={weight}
+                    onChangeText={setWeight}
+                  />
+                </View>
 
-          {/* RPE input */}
-          <View style={styles.modalSelect}>
-            <Text style={styles.label}>RPE</Text>
-            <Picker
-              selectedValue={selectedRPE}
-              onValueChange={(itemValue) => setSelectedRPE(itemValue)}
-              style={styles.input}
-            >
-              {Array.from({ length: 11 }, (_, i) => (
-                <Picker.Item
-                  key={i}
-                  label={(5 + i * 0.5).toFixed(1)}
-                  value={parseFloat((5 + i * 0.5).toFixed(1))}
-                />
-              ))}
-            </Picker>
-          </View>
+                <View style={styles.modalSelect}>
+                  <Text style={styles.label}>Sets x Reps</Text>
+                  <Picker
+                    selectedValue={selectedSets}
+                    onValueChange={(itemValue) => setSelectedSets(itemValue)}
+                    style={styles.input}
+                  >
+                    {Array.from({ length: 10 }, (_, i) => (
+                      <Picker.Item key={i} label={i + 1} value={parseInt(i)} />
+                    ))}
+                  </Picker>
 
-          <View style={styles.modalButtons}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
+                  <Picker
+                    selectedValue={selectedReps}
+                    onValueChange={(itemValue) => setSelectedReps(itemValue)}
+                    style={styles.input}
+                  >
+                    {Array.from({ length: 20 }, (_, i) => (
+                      <Picker.Item key={i} label={i + 1} value={parseInt(i)} />
+                    ))}
+                  </Picker>
+                </View>
 
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Save</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+                <View style={styles.modalSelect}>
+                  {/* RPE input */}
+                  <Text style={styles.label}>RPE</Text>
+                  <Picker
+                    selectedValue={selectedRPE}
+                    onValueChange={(itemValue) => setSelectedRPE(itemValue)}
+                    style={styles.input}
+                  >
+                    {Array.from({ length: 11 }, (_, i) => (
+                      <Picker.Item
+                        key={i}
+                        label={(5 + i * 0.5).toFixed(1)}
+                        value={parseFloat((5 + i * 0.5).toFixed(1))}
+                      />
+                    ))}
+                  </Picker>
+                </View>
+
+                <View style={styles.modalButtons}>
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => setModalVisible(false)}
+                  >
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.saveButton}
+                    onPress={handleSave}
+                  >
+                    <Text style={styles.saveButtonText}>Save</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
@@ -142,6 +155,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
+    flex: 1,
     backgroundColor: '#fff',
     padding: 20,
     borderRadius: 10,
@@ -169,7 +183,6 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 16,
     marginBottom: 15,
-
     flex: 1,
     height: 50,
   },

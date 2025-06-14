@@ -1,0 +1,308 @@
+[
+  {
+    "name": "Bench Press",
+    "muscle_group": "Chest",
+    "description": "Lezite na klupu i podižite uteg ravno prema gore."
+  },
+  {
+    "name": "Incline Bench Press",
+    "muscle_group": "Chest",
+    "description": "Isti pokret kao bench press, ali na kosoj klupi."
+  },
+  {
+    "name": "Decline Bench Press",
+    "muscle_group": "Chest",
+    "description": "Bench press na obrnutoj kosoj klupi."
+  },
+  {
+    "name": "Chest Fly",
+    "muscle_group": "Chest",
+    "description": "Raširite ruke u širokom luku i spojite ih iznad prsa."
+  },
+  {
+    "name": "Cable Crossover",
+    "muscle_group": "Chest",
+    "description": "Povucite ruke iz pozicije u obliku 'T' prema sredini."
+  },
+  {
+    "name": "Push-Up",
+    "muscle_group": "Chest",
+    "description": "Spuštanje i podizanje tijela iz skleka."
+  },
+  {
+    "name": "Incline Push-Up",
+    "muscle_group": "Chest",
+    "description": "Sklek s rukama na povišenju."
+  },
+  {
+    "name": "Decline Push-Up",
+    "muscle_group": "Chest",
+    "description": "Sklek s nogama na povišenju."
+  },
+  {
+    "name": "Close-Grip Push-Up",
+    "muscle_group": "Chest",
+    "description": "Sklek s rukama bliže jedna drugoj."
+  },
+  {
+    "name": "Isometric Chest Squeeze",
+    "muscle_group": "Chest",
+    "description": "Stisnite dlanove ispred prsa i zadržite kontrakciju."
+  },
+
+  {
+    "name": "Pull-Up",
+    "muscle_group": "Back",
+    "description": "Podižite tijelo prema šipci."
+  },
+  {
+    "name": "Chin-Up",
+    "muscle_group": "Back",
+    "description": "Podižite se s dlanovima okrenutima prema sebi."
+  },
+  {
+    "name": "Lat Pulldown",
+    "muscle_group": "Back",
+    "description": "Povucite šipku prema prsima sjedeći."
+  },
+  {
+    "name": "Seated Row",
+    "muscle_group": "Back",
+    "description": "Povlačite ručke prema sebi iz sjedeće pozicije."
+  },
+  {
+    "name": "Bent-Over Row",
+    "muscle_group": "Back",
+    "description": "Savijte se i povucite utege prema trbuhu."
+  },
+  {
+    "name": "Deadlift",
+    "muscle_group": "Back",
+    "description": "Podignite uteg s poda do uspravne pozicije."
+  },
+  {
+    "name": "Straight Arm Pulldown",
+    "muscle_group": "Back",
+    "description": "Povlačite ravne ruke prema bedrima."
+  },
+  {
+    "name": "Reverse Fly",
+    "muscle_group": "Back",
+    "description": "Podignite ruke bočno iz pretklona."
+  },
+  {
+    "name": "Good Morning",
+    "muscle_group": "Back",
+    "description": "Savijanje u bokovima s ravnim leđima."
+  },
+  {
+    "name": "Superman",
+    "muscle_group": "Back",
+    "description": "Lezite na trbuh i podignite ruke i noge u isto vrijeme."
+  },
+
+  {
+    "name": "Overhead Press",
+    "muscle_group": "Shoulders",
+    "description": "Podižite utege iznad glave."
+  },
+  {
+    "name": "Front Raise",
+    "muscle_group": "Shoulders",
+    "description": "Podignite ruke ravno ispred sebe."
+  },
+  {
+    "name": "Lateral Raise",
+    "muscle_group": "Shoulders",
+    "description": "Podignite ruke bočno."
+  },
+  {
+    "name": "Rear Delt Fly",
+    "muscle_group": "Shoulders",
+    "description": "Podignite ruke unazad u pretklonu."
+  },
+  {
+    "name": "Arnold Press",
+    "muscle_group": "Shoulders",
+    "description": "Rotacijsko podizanje iz prednje u gornju poziciju."
+  },
+  {
+    "name": "Push Press",
+    "muscle_group": "Shoulders",
+    "description": "Koristite noge za dodatnu snagu kod podizanja."
+  },
+  {
+    "name": "Shrug",
+    "muscle_group": "Shoulders",
+    "description": "Podignite ramena prema ušima i zadržite."
+  },
+  {
+    "name": "Z Press",
+    "muscle_group": "Shoulders",
+    "description": "Sjedenje na podu i podizanje iznad glave."
+  },
+  {
+    "name": "Y Raise",
+    "muscle_group": "Shoulders",
+    "description": "Podignite ruke u obliku slova Y."
+  },
+  {
+    "name": "Face Pull",
+    "muscle_group": "Shoulders",
+    "description": "Povucite ručku prema licu, fokus na stražnje rame."
+  },
+
+  {
+    "name": "Squat",
+    "muscle_group": "Legs",
+    "description": "Čučnite s ravnim leđima i vratite se u stojeći položaj."
+  },
+  {
+    "name": "Front Squat",
+    "muscle_group": "Legs",
+    "description": "Čučanj s utegom ispred tijela."
+  },
+  {
+    "name": "Bulgarian Split Squat",
+    "muscle_group": "Legs",
+    "description": "Stražnja noga na povišenju, spuštanje prednjom."
+  },
+  {
+    "name": "Lunge",
+    "muscle_group": "Legs",
+    "description": "Iskorak i povratak u početni položaj."
+  },
+  {
+    "name": "Step-Up",
+    "muscle_group": "Legs",
+    "description": "Iskoračite na povišenu površinu i vratite se."
+  },
+  {
+    "name": "Romanian Deadlift",
+    "muscle_group": "Legs",
+    "description": "Ravna leđa, pokret iz kukova prema dolje."
+  },
+  {
+    "name": "Leg Curl",
+    "muscle_group": "Legs",
+    "description": "Savijanje noge prema stražnjici."
+  },
+  {
+    "name": "Leg Extension",
+    "muscle_group": "Legs",
+    "description": "Ispružanje noge iz sjedeće pozicije."
+  },
+  {
+    "name": "Wall Sit",
+    "muscle_group": "Legs",
+    "description": "Zadržavanje sjedeće pozicije uza zid."
+  },
+  {
+    "name": "Calf Raise",
+    "muscle_group": "Legs",
+    "description": "Podignite pete i zadržite se na prstima."
+  },
+
+  {
+    "name": "Bicep Curl",
+    "muscle_group": "Biceps",
+    "description": "Savijanje ruke prema ramenu."
+  },
+  {
+    "name": "Hammer Curl",
+    "muscle_group": "Biceps",
+    "description": "Cijela ruka se savija s neutralnim hvatom."
+  },
+  {
+    "name": "Concentration Curl",
+    "muscle_group": "Biceps",
+    "description": "Savijanje ruke oslonjene na bedro."
+  },
+  {
+    "name": "Preacher Curl",
+    "muscle_group": "Biceps",
+    "description": "Savijanje ruke na nagnutoj podlozi."
+  },
+  {
+    "name": "Zottman Curl",
+    "muscle_group": "Biceps",
+    "description": "Miješanje regularnog i obrnutog hvata."
+  },
+
+  {
+    "name": "Triceps Pushdown",
+    "muscle_group": "Triceps",
+    "description": "Pritisak prema dolje iz pregiba lakta."
+  },
+  {
+    "name": "Overhead Triceps Extension",
+    "muscle_group": "Triceps",
+    "description": "Spuštanje i podizanje iznad glave."
+  },
+  {
+    "name": "Skullcrusher",
+    "muscle_group": "Triceps",
+    "description": "Spustite uteg prema čelu i podignite nazad."
+  },
+  {
+    "name": "Close-Grip Bench Press",
+    "muscle_group": "Triceps",
+    "description": "Bench s uskim hvatom za tricepse."
+  },
+  {
+    "name": "Dips",
+    "muscle_group": "Triceps",
+    "description": "Spuštanje i podizanje tijela s osloncem na ruke."
+  },
+
+  {
+    "name": "Crunch",
+    "muscle_group": "Core",
+    "description": "Skraćivanje trbuha bez podizanja cijelog trupa."
+  },
+  {
+    "name": "Sit-Up",
+    "muscle_group": "Core",
+    "description": "Podizanje cijelog trupa iz ležeće pozicije."
+  },
+  {
+    "name": "Plank",
+    "muscle_group": "Core",
+    "description": "Zadržavanje tijela u ravnoj liniji na podlakticama."
+  },
+  {
+    "name": "Side Plank",
+    "muscle_group": "Core",
+    "description": "Zadržavanje tijela na jednoj ruci bočno."
+  },
+  {
+    "name": "Leg Raise",
+    "muscle_group": "Core",
+    "description": "Podignite ravne noge iz ležeće pozicije."
+  },
+  {
+    "name": "Flutter Kicks",
+    "muscle_group": "Core",
+    "description": "Brzo naizmjenično podizanje nogu."
+  },
+  {
+    "name": "Russian Twist",
+    "muscle_group": "Core",
+    "description": "Rotirajte trup lijevo-desno iz sjedeće pozicije."
+  },
+  {
+    "name": "Bicycle Crunch",
+    "muscle_group": "Core",
+    "description": "Naizmjenični pokreti lakta i koljena."
+  },
+  {
+    "name": "Mountain Climbers",
+    "muscle_group": "Core",
+    "description": "Brzo povlačenje koljena prema prsima."
+  },
+  {
+    "name": "Hanging Leg Raise",
+    "muscle_group": "Core",
+    "description": "Podizanje nogu dok visite."
+  }
+]
