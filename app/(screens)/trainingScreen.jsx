@@ -13,6 +13,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import ExerciseRender from '@/components/ExerciseRender';
 import AddExerciseModal from '@/components/AddExerciseModal';
 import saiyanService from '@/services/saiyanService';
+import { useDate } from '@/contexts/DateContext';
+
+const { selectedDate } = useDate();
 
 const TrainingScreen = () => {
   const router = useRouter();
@@ -41,7 +44,7 @@ const TrainingScreen = () => {
     if (user) {
       fetchExercises();
     }
-  }, []);
+  }, [selectedDate, user]);
 
   const fetchExercises = async () => {
     setLoading(true);
@@ -51,6 +54,10 @@ const TrainingScreen = () => {
       setError(response.error);
       Alert.alert('Errror', response.error);
     } else {
+      let exercises = response.data;
+      if (selectedDate) {
+        exercises = exercises.filter((ex) => ex.date === selectedDate);
+      }
       setExercise(response.data);
       setError(null);
     }
@@ -63,6 +70,7 @@ const TrainingScreen = () => {
     if (NewExerciseName.trim() === '') return;
     const newData = {
       user_id: user.$id,
+      date: selectedDate || new Date().toISOString().split('T')[0],
       name: String(NewExerciseName).trim(),
       weight: parseFloat(weight), // Ensure number
       sets: selectedSets,
