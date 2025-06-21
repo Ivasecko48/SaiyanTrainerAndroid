@@ -15,12 +15,9 @@ import AddExerciseModal from '@/components/AddExerciseModal';
 import saiyanService from '@/services/saiyanService';
 import { useDate } from '@/contexts/DateContext';
 
-const { selectedDate } = useDate();
-
 const TrainingScreen = () => {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-
   const [exercise, setExercise] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [NewExerciseName, setNewExerciseName] = useState('');
@@ -30,7 +27,7 @@ const TrainingScreen = () => {
   const [weight, setWeight] = useState('');
   //for editing
   const [editingExercise, setEditingExercise] = useState(null);
-
+  const { selectedDate } = useDate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -49,16 +46,18 @@ const TrainingScreen = () => {
   const fetchExercises = async () => {
     setLoading(true);
     const response = await saiyanService.getExercises(user.$id);
-
     if (response.error) {
       setError(response.error);
       Alert.alert('Errror', response.error);
     } else {
       let exercises = response.data;
       if (selectedDate) {
-        exercises = exercises.filter((ex) => ex.date === selectedDate);
+        exercises = exercises.filter((ex) => {
+          const exDate = new Date(ex.createdAt).toISOString().split('T')[0];
+          return exDate === selectedDate;
+        });
       }
-      setExercise(response.data);
+      setExercise(exercises);
       setError(null);
     }
 
