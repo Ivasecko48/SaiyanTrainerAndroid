@@ -21,8 +21,8 @@ const TrainingScreen = () => {
   const [exercise, setExercise] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [NewExerciseName, setNewExerciseName] = useState('');
-  const [selectedReps, setSelectedReps] = useState(10);
-  const [selectedSets, setSelectedSets] = useState(3);
+  const [selectedReps, setSelectedReps] = useState(1);
+  const [selectedSets, setSelectedSets] = useState(1);
   const [selectedRPE, setSelectedRPE] = useState(8.5);
   const [weight, setWeight] = useState('');
   //for editing
@@ -67,14 +67,17 @@ const TrainingScreen = () => {
 
   const handleSave = async () => {
     if (NewExerciseName.trim() === '') return;
+    const dateToSave = selectedDate
+      ? new Date(selectedDate) // koristi selectedDate iz kalendara
+      : new Date(); // današnji datum ako ništa nije odabranor
     const newData = {
       user_id: user.$id,
-      date: selectedDate || new Date().toISOString().split('T')[0],
+      createdAt: dateToSave.toISOString(),
       name: String(NewExerciseName).trim(),
-      weight: parseFloat(weight), // Ensure number
-      sets: selectedSets,
-      reps: selectedReps,
-      rpe: selectedRPE,
+      weight: parseFloat(weight) || 0, // Ensure number
+      sets: selectedSets || 1,
+      reps: selectedReps || 1,
+      rpe: selectedRPE || 5.0,
     };
     if (editingExercise) {
       // Update existing
@@ -101,9 +104,9 @@ const TrainingScreen = () => {
 
     setEditingExercise(null);
     setNewExerciseName('');
-    setSelectedSets('1');
-    setSelectedReps('1');
-    setSelectedRPE('5.0');
+    setSelectedSets(1);
+    setSelectedReps(1);
+    setSelectedRPE(8.5);
     setModalVisible(false);
   };
 

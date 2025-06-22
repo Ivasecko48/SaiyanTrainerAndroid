@@ -9,9 +9,10 @@ import {
   Modal,
 } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Calendar } from 'react-native-calendars';
 import { useDate } from '@/contexts/DateContext';
+import saiyanService from '@/services/saiyanService';
 
 const HeaderLogout = () => {
   const { user, logout } = useAuth();
@@ -43,12 +44,54 @@ const HeaderLogout = () => {
 export default function TabLayout() {
   const [calendarVisible, setCalendarVisible] = useState(false);
   const { selectedDate, setSelectedDate } = useDate();
+  const { user } = useAuth();
+  const [exercises, setExercises] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await saiyanService.getExercises(user.$id);
+      if (res.error) {
+        console.error('Error fetching exercises:', res.error);
+        setExercises([]);
+      } else {
+        setExercises(res.data || []);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleDayPress = (day) => {
     setSelectedDate(day.dateString);
     setCalendarVisible(false);
     // TODO: Po želji filtriraj obroke ili vježbe za taj datum
     console.log('Selected date:', day.dateString);
+  };
+
+  const getMarkedDates = (exercises, selectedDate) => {
+    const marked = {};
+
+    exercises.forEach((ex) => {
+      const dateStr = new Date(ex.createdAt).toISOString().split('T')[0];
+
+      // Ako već postoji oznaka, nemoj prebrisati
+      if (!marked[dateStr]) {
+        marked[dateStr] = {
+          selected: true,
+          selectedColor: 'lightgreen',
+        };
+      }
+    });
+
+    // Dodaj odabrani datum kao posebno označen
+    if (selectedDate) {
+      marked[selectedDate] = {
+        ...(marked[selectedDate] || {}),
+        selected: true,
+        selectedColor: '#fc7138',
+      };
+    }
+
+    return marked;
   };
 
   return (
@@ -110,16 +153,7 @@ export default function TabLayout() {
           <View style={styles.modalContent}>
             <Calendar
               onDayPress={handleDayPress}
-              markedDates={
-                selectedDate
-                  ? {
-                      [selectedDate]: {
-                        selected: true,
-                        selectedColor: '#fc7138',
-                      },
-                    }
-                  : {}
-              }
+              markedDates={getMarkedDates(exercises, selectedDate)}
             />
           </View>
         </View>

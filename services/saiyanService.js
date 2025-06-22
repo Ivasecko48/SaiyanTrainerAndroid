@@ -50,18 +50,18 @@ const saiyanService = {
   },
 
   // Add new ex
-  async addExercise({ user_id, name, weight, sets, reps, rpe }) {
+  async addExercise({ user_id, createdAt, name, weight, sets, reps, rpe }) {
     if (!name) {
       return { error: 'Exercise name cant be empty' };
     }
 
     const data = {
       name,
+      createdAt,
       weight,
       sets,
       reps,
       rpe,
-      createdAt: new Date().toISOString(),
       user_id: user_id,
     };
 
