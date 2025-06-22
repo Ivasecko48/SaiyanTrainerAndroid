@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   TextInput,
@@ -7,12 +7,44 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
-import exercises from './workout_exercises.json'; // ili tvoj import put
+import defaultExercises from './workout_exercises.json'; // ili tvoj import put
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const STORAGE_KEY = 'CUSTOM_EXERCISE_LIST';
 
 const ExerciseAutocompleteInput = ({ value, onChange }) => {
+  const [exerciseList, setExerciseList] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const filtered = exercises.filter((exercise) =>
+  useEffect(() => {
+    const loadExercises = async () => {
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          setExerciseList(JSON.parse(stored));
+        } else {
+          setExerciseList(defaultExercises);
+        }
+      } catch (err) {
+        console.log('Greška kod učitavanja vježbi:', err);
+        setExerciseList(defaultExercises);
+      }
+    };
+
+    loadExercises();
+  }, []);
+
+  const addNewExercise = async (newExercise) => {
+    const updatedList = [...exerciseList, newExercise];
+    setExerciseList(updatedList);
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+    } catch (err) {
+      console.log('Greška kod spremanja vježbi:', err);
+    }
+  };
+
+  const filtered = exerciseList.filter((exercise) =>
     exercise.name.toLowerCase().includes(value.toLowerCase())
   );
 
@@ -65,7 +97,13 @@ const ExerciseAutocompleteInput = ({ value, onChange }) => {
 
       {filtered.length === 0 && value.length > 0 && (
         <TouchableOpacity
-          onPress={() => {
+          onPress={async () => {
+            const newExercise = {
+              name: value,
+              muscle_group: 'Custom',
+              description: '',
+            };
+            await addNewExercise(newExercise);
             onChange(value); // Dodajemo unos nove vježbe
             setShowSuggestions(false);
           }}
