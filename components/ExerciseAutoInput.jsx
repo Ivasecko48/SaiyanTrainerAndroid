@@ -9,25 +9,44 @@ import {
 } from 'react-native';
 import defaultExercises from './workout_exercises.json'; // ili tvoj import put
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Picker } from '@react-native-picker/picker';
 
 const STORAGE_KEY = 'CUSTOM_EXERCISE_LIST';
 
 const ExerciseAutocompleteInput = ({ value, onChange }) => {
   const [exerciseList, setExerciseList] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [addingNew, setAddingNew] = useState(false);
+  const [selectedMuscleGroup, setSelectedMuscleGroup] = useState('');
+  const muscleGroups = Array.from(
+    new Set(exerciseList.map((ex) => ex.muscle_group || 'Ostalo'))
+  );
 
   useEffect(() => {
     const loadExercises = async () => {
       try {
+        // 1. Učitaj vježbe iz .json datoteke
+        let combined = [...defaultExercises];
+
+        // 2. Učitaj dodatne korisničke vježbe iz AsyncStorage
         const stored = await AsyncStorage.getItem(STORAGE_KEY);
         if (stored) {
-          setExerciseList(JSON.parse(stored));
-        } else {
-          setExerciseList(defaultExercises);
+          const parsed = JSON.parse(stored);
+
+          // 3. Kombiniraj ako nisu već duplikati
+          parsed.forEach((ex) => {
+            const exists = combined.some((e) => e.name === ex.name);
+            if (!exists) combined.push(ex);
+          });
         }
+
+        // 4. Postavi state
+        setExerciseList(combined);
+
+        console.log('✅ Učitane vježbe:', combined.length);
       } catch (err) {
-        console.log('Greška kod učitavanja vježbi:', err);
-        setExerciseList(defaultExercises);
+        console.log('❌ Greška kod učitavanja vježbi:', err);
+        setExerciseList(defaultExercises); // fallback
       }
     };
 
@@ -95,17 +114,10 @@ const ExerciseAutocompleteInput = ({ value, onChange }) => {
         />
       )}
 
-      {filtered.length === 0 && value.length > 0 && (
+      {filtered.length === 0 && value.length > 0 && !addingNew && (
         <TouchableOpacity
-          onPress={async () => {
-            const newExercise = {
-              name: value,
-              muscle_group: 'Custom',
-              description: '',
-            };
-            await addNewExercise(newExercise);
-            onChange(value); // Dodajemo unos nove vježbe
-            setShowSuggestions(false);
+          onPress={() => {
+            setAddingNew(true);
           }}
           style={styles.addNewExercise}
         >
@@ -113,6 +125,50 @@ const ExerciseAutocompleteInput = ({ value, onChange }) => {
             ➕ Dodaj novu vježbu: "{value}"
           </Text>
         </TouchableOpacity>
+      )}
+      {addingNew && (
+        <View style={{ marginTop: 10 }}>
+          <Text style={{ marginBottom: 6 }}>Odaberi mišićnu skupinu:</Text>
+          <Picker
+            selectedValue={selectedMuscleGroup}
+            onValueChange={(itemValue) => setSelectedMuscleGroup(itemValue)}
+          >
+            {muscleGroups.map((group) => (
+              <Picker.Item key={group} label={group} value={group} />
+            ))}
+          </Picker>
+
+          <TouchableOpacity
+            onPress={async () => {
+              const newExercise = {
+                name: value,
+                muscle_group: selectedMuscleGroup,
+                description: '',
+              };
+              const updatedList = [...exerciseList, newExercise];
+
+              try {
+                await AsyncStorage.setItem(
+                  STORAGE_KEY,
+                  JSON.stringify(updatedList)
+                );
+                setExerciseList(updatedList);
+                onChange(value);
+                setAddingNew(false);
+                setShowSuggestions(false);
+                console.log('✅ Spremljeno:', newExercise);
+              } catch (err) {
+                console.log('Greška:', err);
+              }
+            }}
+            style={[
+              styles.addNewExercise,
+              { marginTop: 10, backgroundColor: '#d0f0ff' },
+            ]}
+          >
+            <Text style={{ color: '#333' }}>💾 Spremi novu vježbu</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   );
