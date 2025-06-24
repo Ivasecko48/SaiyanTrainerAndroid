@@ -84,6 +84,7 @@ const ExerciseAutocompleteInput = ({ value, onChange }) => {
       <TextInput
         style={styles.input}
         placeholder="Unesi ili pronađi vježbu"
+        placeholderTextColor="#888"
         value={value}
         onChangeText={(text) => {
           onChange(text);

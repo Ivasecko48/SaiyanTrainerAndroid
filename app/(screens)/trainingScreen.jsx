@@ -10,10 +10,10 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDate } from '@/contexts/DateContext';
 import ExerciseRender from '@/components/ExerciseRender';
 import AddExerciseModal from '@/components/AddExerciseModal';
 import saiyanService from '@/services/saiyanService';
-import { useDate } from '@/contexts/DateContext';
 
 const TrainingScreen = () => {
   const router = useRouter();
@@ -115,6 +115,9 @@ const TrainingScreen = () => {
   const openEditModal = (exercise) => {
     setNewExerciseName(exercise.name); // Or whole object if you're editing more fields
     setEditingExercise(exercise); // Save reference
+    setSelectedRPE(exercise.rpe);
+    setSelectedReps(exercise.reps);
+    setSelectedSets(exercise.sets);
     setModalVisible(true);
   };
 

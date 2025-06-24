@@ -37,7 +37,8 @@ const AddMealModal = ({
             <Text style={styles.label}>Are you even trying to get big?</Text>
             <TextInput
               style={styles.textInput}
-              placeholder=">200kcals"
+              placeholder="Jesi li jeo?"
+              placeholderTextColor={'#888'}
               keyboardType="text"
               value={mealName}
               onChangeText={setMealName}
@@ -49,6 +50,7 @@ const AddMealModal = ({
             <TextInput
               style={styles.textInput}
               placeholder=">200kcal"
+              placeholderTextColor={'#888'}
               keyboardType="numeric"
               value={calories}
               onChangeText={setCalories}
@@ -59,7 +61,8 @@ const AddMealModal = ({
             <Text style={styles.label}>Protein</Text>
             <TextInput
               style={styles.textInput}
-              placeholder=">5g proto"
+              placeholder=">10g proto"
+              placeholderTextColor={'#888'}
               keyboardType="numeric"
               value={protein}
               onChangeText={setProtein}

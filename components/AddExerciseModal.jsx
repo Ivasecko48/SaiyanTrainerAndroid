@@ -51,6 +51,7 @@ const AddExerciseModal = ({
             <TextInput
               style={styles.textInput}
               placeholder="Weight in kgs"
+              placeholderTextColor="#888"
               keyboardType="numeric"
               value={weight}
               onChangeText={setWeight}
@@ -59,46 +60,53 @@ const AddExerciseModal = ({
 
           <View style={styles.modalSelect}>
             <Text style={styles.label}>Sets</Text>
-            <Picker
-              selectedValue={selectedSets}
-              onValueChange={(itemValue) => setSelectedSets(itemValue)}
-              style={styles.input}
-            >
-              {Array.from({ length: 10 }, (_, i) => (
-                <Picker.Item key={i} label={i + 1} value={parseInt(i)} />
-              ))}
-            </Picker>
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={selectedSets}
+                onValueChange={(itemValue) => setSelectedSets(itemValue)}
+                style={styles.input}
+              >
+                {Array.from({ length: 10 }, (_, i) => (
+                  <Picker.Item key={i} label={i + 1} value={parseInt(i)} />
+                ))}
+              </Picker>
+            </View>
           </View>
 
           <View style={styles.modalSelect}>
             <Text style={styles.label}>Reps</Text>
-            <Picker
-              selectedValue={selectedReps}
-              onValueChange={(itemValue) => setSelectedReps(itemValue)}
-              style={styles.input}
-            >
-              {Array.from({ length: 20 }, (_, i) => (
-                <Picker.Item key={i} label={i + 1} value={parseInt(i)} />
-              ))}
-            </Picker>
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={selectedReps}
+                onValueChange={(itemValue) => setSelectedReps(itemValue)}
+                style={styles.input}
+              >
+                {Array.from({ length: 20 }, (_, i) => (
+                  <Picker.Item key={i} label={i + 1} value={parseInt(i)} />
+                ))}
+              </Picker>
+            </View>
           </View>
 
           <View style={styles.modalSelect}>
             {/* RPE input */}
             <Text style={styles.label}>RPE</Text>
-            <Picker
-              selectedValue={selectedRPE}
-              onValueChange={(itemValue) => setSelectedRPE(itemValue)}
-              style={styles.input}
-            >
-              {Array.from({ length: 11 }, (_, i) => (
-                <Picker.Item
-                  key={i}
-                  label={(5 + i * 0.5).toFixed(1)}
-                  value={parseFloat((5 + i * 0.5).toFixed(1))}
-                />
-              ))}
-            </Picker>
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={selectedRPE}
+                onValueChange={(itemValue) => setSelectedRPE(itemValue)}
+                style={styles.input}
+              >
+                {Array.from({ length: 11 }, (_, i) => (
+                  <Picker.Item
+                    key={i}
+                    label={(5 + i * 0.5).toFixed(1)}
+                    value={parseFloat((5 + i * 0.5).toFixed(1))}
+                    color="red"
+                  />
+                ))}
+              </Picker>
+            </View>
           </View>
           <View style={styles.modalButtons}>
             <TouchableOpacity
@@ -154,16 +162,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     marginRight: 12,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
-    marginBottom: 15,
-    flex: 1,
-    height: 50,
-  },
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -198,6 +196,27 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
+  },
+  input: {
+    fontSize: 16,
+    color: '#000',
+    backgroundColor: '#fff',
+    width: 50,
+    height: '100%',
+    textAlign: 'center',
+  },
+  pickerWrapper: {
+    backgroundColor: '#eee',
+    width: 80,
+    minHeight: 40,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    marginBottom: 12,
+    overflow: 'hidden', // da zaobljeni rubovi izgledaju uredno
+    justifyContent: 'center', // vertikalno centriranje
+    alignItems: 'center',
   },
   label: {
     flex: 1,

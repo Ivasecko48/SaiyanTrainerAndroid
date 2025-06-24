@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDate } from '@/contexts/DateContext';
 import MealRender from '@/components/MealRender';
 import AddMealModal from '@/components/AddMealModal';
 import saiyanService from '@/services/saiyanService';
@@ -23,9 +24,11 @@ const MealsScreen = () => {
   const [NewMealName, setNewMealName] = useState('');
   const [protein, setProtein] = useState(10);
   const [calories, setCalories] = useState(3);
+  const [totalCalories, setTotalCalories] = useState(0);
+  const [totalProtein, setTotalProtein] = useState(0);
   //for editing
   const [editingMeal, setEditingMeal] = useState(null);
-
+  const { selectedDate } = useDate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -39,7 +42,7 @@ const MealsScreen = () => {
     if (user) {
       fetchMeals();
     }
-  }, []);
+  }, [selectedDate, user]);
 
   const fetchMeals = async () => {
     setLoading(true);
@@ -49,8 +52,25 @@ const MealsScreen = () => {
       setError(response.error);
       Alert.alert('Error', response.error);
     } else {
-      setMeals(response.data);
+      let meals = response.data;
+      if (selectedDate) {
+        meals = meals.filter((meal) => {
+          const mealDate = new Date(meal.createdAt).toISOString().split('T')[0];
+          return mealDate === selectedDate;
+        });
+      }
+      setMeals(meals);
       setError(null);
+
+      let totalCalories = 0;
+      let totalProtein = 0;
+      meals.forEach((meal) => {
+        totalCalories += Number(meal.calories) || 0;
+        totalProtein += Number(meal.protein) || 0;
+      });
+
+      setTotalCalories(totalCalories);
+      setTotalProtein(totalProtein);
     }
 
     setLoading(false);
@@ -59,8 +79,12 @@ const MealsScreen = () => {
 
   const handleSave = async () => {
     if (calories === '') return;
+    const dateToSave = selectedDate
+      ? new Date(selectedDate) // koristi selectedDate iz kalendara
+      : new Date(); // današnji datum ako ništa nije odabranor
     const newData = {
       user_id: user.$id,
+      createdAt: dateToSave.toISOString(),
       name: String(NewMealName).trim(),
       protein: parseFloat(protein),
       calories: parseFloat(calories),
@@ -84,7 +108,7 @@ const MealsScreen = () => {
       if (response.error) {
         Alert.alert('error', response.error);
       } else {
-        setMeals([...Meal, response.data]);
+        setMeals([...meals, response.data]);
       }
     }
 
@@ -147,12 +171,20 @@ const MealsScreen = () => {
             data={meals}
             keyExtractor={(item) => item.$id}
             renderItem={({ item }) => (
-              <MealRender item={item} onDelete={deleteMeal} />
+              <MealRender
+                item={item}
+                onDelete={deleteMeal}
+                onEdit={openEditModal}
+              />
             )}
             ListHeaderComponent={renderHeader}
           />
         </>
       )}
+      <View style={styles.total}>
+        <Text style={styles.totalText}>Ukupno kalorija: {totalCalories}</Text>
+        <Text style={styles.totalText}>Ukupno proteina: {totalProtein}g</Text>
+      </View>
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => setModalVisible(true)}
@@ -248,6 +280,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 10,
     fontSize: 16,
+  },
+  total: {
+    marginLeft: 10,
+  },
+  totalText: {
+    fontWeight: 'bold',
+    color: '#65617e',
   },
 });
 export default MealsScreen;
