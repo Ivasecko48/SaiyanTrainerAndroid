@@ -4,7 +4,7 @@
     "slug": "SaiyanTrainer",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/goku_icon.png",
     "scheme": "saiyantrainer",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

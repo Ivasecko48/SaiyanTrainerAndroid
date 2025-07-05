@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import { Modal } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import RNPickerSelect from 'react-native-picker-select';
 import ExerciseAutocompleteInput from './ExerciseAutoInput';
 
 const AddExerciseModal = ({
@@ -60,6 +61,17 @@ const AddExerciseModal = ({
 
           <View style={styles.modalSelect}>
             <Text style={styles.label}>Sets</Text>
+            <View>
+              <RNPickerSelect
+                onValueChange={(value) => setSelectedSets(value)}
+                value={selectedSets}
+                placeholder={{ label: 'Odaberi broj setova', value: null }}
+                items={Array.from({ length: 10 }, (_, i) => ({
+                  label: String(i + 1),
+                  value: i + 1,
+                }))}
+              />
+            </View>
             <View style={styles.pickerWrapper}>
               <Picker
                 selectedValue={selectedSets}
@@ -89,7 +101,6 @@ const AddExerciseModal = ({
           </View>
 
           <View style={styles.modalSelect}>
-            {/* RPE input */}
             <Text style={styles.label}>RPE</Text>
             <View style={styles.pickerWrapper}>
               <Picker
@@ -102,12 +113,12 @@ const AddExerciseModal = ({
                     key={i}
                     label={(5 + i * 0.5).toFixed(1)}
                     value={parseFloat((5 + i * 0.5).toFixed(1))}
-                    color="red"
                   />
                 ))}
               </Picker>
             </View>
           </View>
+
           <View style={styles.modalButtons}>
             <TouchableOpacity
               style={styles.cancelButton}
@@ -155,7 +166,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: 'orange',
     borderRadius: 8,
     padding: 10,
     fontSize: 16,
@@ -201,17 +212,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
     backgroundColor: '#fff',
-    width: 50,
-    height: '100%',
+    width: 80,
+    height: 50,
     textAlign: 'center',
   },
   pickerWrapper: {
-    backgroundColor: '#eee',
-    width: 80,
+    paddingLeft: 50,
+    width: 60,
     minHeight: 40,
     marginRight: 12,
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: 'orange',
     borderRadius: 8,
     marginBottom: 12,
     overflow: 'hidden', // da zaobljeni rubovi izgledaju uredno

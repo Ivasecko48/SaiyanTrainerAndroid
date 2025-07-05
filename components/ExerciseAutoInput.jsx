@@ -179,10 +179,11 @@ const styles = StyleSheet.create({
   container: { marginBottom: 12 },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: 'orange',
     borderRadius: 8,
     padding: 10,
     fontSize: 16,
+    marginRight: 12,
   },
   suggestions: {
     maxHeight: 180,
