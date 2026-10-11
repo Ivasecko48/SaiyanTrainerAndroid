@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Platform,
   View,
+  Text,
   Modal,
 } from 'react-native';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,10 +33,7 @@ const HeaderLogout = () => {
   };
 
   return user ? (
-    <TouchableOpacity
-      onPress={() => logoutAlert(logout)}
-      style={{ paddingRight: 14 }}
-    >
+    <TouchableOpacity onPress={logoutAlert} style={{ paddingRight: 14 }}>
       <Feather name="log-out" size={24} color="white" />
     </TouchableOpacity>
   ) : null;
@@ -43,11 +41,18 @@ const HeaderLogout = () => {
 
 export default function TabLayout() {
   const [calendarVisible, setCalendarVisible] = useState(false);
-  const { selectedDate, setSelectedDate } = useDate();
+  const { selectedDate, setSelectedDate, refreshKey } = useDate();
   const { user } = useAuth();
   const [exercises, setExercises] = useState([]);
 
+  // Učitaj dane s vježbama za oznake u kalendaru.
+  // Ponovo se učitava kad se vježbe promijene (refreshKey) ili korisnik zamijeni.
   useEffect(() => {
+    if (!user) {
+      setExercises([]);
+      return;
+    }
+
     const fetchData = async () => {
       const res = await saiyanService.getExercises(user.$id);
       if (res.error) {
@@ -58,13 +63,17 @@ export default function TabLayout() {
       }
     };
     fetchData();
-  }, []);
+  }, [user?.$id, refreshKey]);
 
   const handleDayPress = (day) => {
     setSelectedDate(day.dateString);
     setCalendarVisible(false);
-    // TODO: Po želji filtriraj obroke ili vježbe za taj datum
-    console.log('Selected date:', day.dateString);
+  };
+
+  // Makni filter datuma i prikaži sve dane
+  const handleShowAll = () => {
+    setSelectedDate(null);
+    setCalendarVisible(false);
   };
 
   const getMarkedDates = (exercises, selectedDate) => {
@@ -132,6 +141,8 @@ export default function TabLayout() {
           name="mealScreen"
           options={{ title: 'Big man', headerRight: () => <HeaderLogout /> }}
         />
+        {/* AI chat je privremeno skriven iz tabova dok ga ne popravimo */}
+        <Tabs.Screen name="chatWithAI" options={{ href: null }} />
       </Tabs>
 
       {/* FAB Button */}
@@ -152,9 +163,24 @@ export default function TabLayout() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Calendar
+              current={selectedDate || undefined}
               onDayPress={handleDayPress}
               markedDates={getMarkedDates(exercises, selectedDate)}
             />
+            <View style={styles.calendarActions}>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={handleShowAll}
+              >
+                <Text style={styles.actionText}>Prikaži sve dane</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => setCalendarVisible(false)}
+              >
+                <Text style={styles.actionText}>Zatvori</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -187,5 +213,22 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: 'white',
     overflow: 'hidden',
+  },
+  calendarActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderColor: '#eee',
+  },
+  actionButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  actionText: {
+    color: '#fc7138',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

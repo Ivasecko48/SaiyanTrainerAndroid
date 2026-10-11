@@ -4,7 +4,8 @@ import { Feather } from '@expo/vector-icons';
 const MealRender = ({ item, onDelete, onEdit }) => {
   return (
     <View style={styles.row}>
-      <Text style={styles.cell}>{item.name}</Text>
+      {/* Stari obroci nemaju spremljen naziv (null), pa im dajemo zamjenski tekst */}
+      <Text style={styles.cell}>{item.mealName || 'Bez naziva'}</Text>
       <Text style={styles.cell}>{item.protein}</Text>
       <Text style={styles.cell}>{item.calories}</Text>
       <TouchableOpacity

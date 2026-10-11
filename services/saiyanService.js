@@ -6,26 +6,44 @@ const dbId = process.env.EXPO_PUBLIC_APPWRITE_DB_ID;
 const exerColId = process.env.EXPO_PUBLIC_APPWRITE_COL_EXERCISES_ID;
 const mealsColId = process.env.EXPO_PUBLIC_APPWRITE_COL_MEALS_ID;
 
+const PAGE_SIZE = 100;
+
+// Appwrite po defaultu vraća samo 25 dokumenata po upitu.
+// Zato dohvaćamo stranicu po stranicu dok ne stignemo do kraja.
+const listAllForUser = async (colId, userId) => {
+  const all = [];
+  let cursor = null;
+
+  while (true) {
+    const queries = [Query.equal('user_id', userId), Query.limit(PAGE_SIZE)];
+    if (cursor) queries.push(Query.cursorAfter(cursor));
+
+    const response = await databaseService.listDocuments(dbId, colId, queries);
+    if (response.error) {
+      return { data: [], error: response.error };
+    }
+
+    all.push(...response.data);
+
+    if (response.data.length < PAGE_SIZE) break;
+    cursor = response.data[response.data.length - 1].$id;
+  }
+
+  return { data: all, error: null };
+};
+
 const saiyanService = {
   //get exers
   async getExercises(userId) {
     if (!userId) {
-      console.error('Error; Missing userId in getExercise');
+      console.error('Error; Missing userId in getExercises');
       return {
         data: [],
         error: 'User ID is missing',
       };
     }
 
-    try {
-      const response = await databaseService.listDocuments(dbId, exerColId, [
-        Query.equal('user_id', userId),
-      ]);
-      return response;
-    } catch (error) {
-      console.log('Error fetching notes:', error.message);
-      return { data: [], error: error.message };
-    }
+    return listAllForUser(exerColId, userId);
   },
 
   //get meals
@@ -38,15 +56,7 @@ const saiyanService = {
       };
     }
 
-    try {
-      const response = await databaseService.listDocuments(dbId, mealsColId, [
-        Query.equal('user_id', userId),
-      ]);
-      return response;
-    } catch (error) {
-      console.log('Error fetching notes:', error.message);
-      return { data: [], error: error.message };
-    }
+    return listAllForUser(mealsColId, userId);
   },
 
   // Add new ex
@@ -80,9 +90,13 @@ const saiyanService = {
   },
 
   //add new meal
-
-  async addMeal({ user_id, mealName, calories, protein }) {
-    if (!calories) {
+  // Polje u Appwrite kolekciji se zove `mealName`.
+  // createdAt dolazi s ekrana, pa obrok završi na odabranom danu u kalendaru.
+  async addMeal({ user_id, createdAt, mealName, calories, protein }) {
+    if (!mealName) {
+      return { error: 'Meal name cant be empty' };
+    }
+    if (calories == null || Number.isNaN(calories)) {
       return { error: 'Calories cant be null' };
     }
 
@@ -90,7 +104,7 @@ const saiyanService = {
       mealName,
       calories,
       protein,
-      createdAt: new Date().toISOString(),
+      createdAt: createdAt || new Date().toISOString(),
       user_id: user_id,
     };
 
@@ -126,13 +140,13 @@ const saiyanService = {
   },
 
   // Update meal
-  async updateMeal({ id, name, calories, protein }) {
+  async updateMeal({ id, mealName, calories, protein }) {
     const response = await databaseService.updateDocument(
       dbId,
       mealsColId,
       id,
       {
-        name,
+        mealName,
         calories,
         protein,
       }

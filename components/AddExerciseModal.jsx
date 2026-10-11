@@ -7,12 +7,16 @@ import {
 } from 'react-native';
 import { Modal } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import RNPickerSelect from 'react-native-picker-select';
 import ExerciseAutocompleteInput from './ExerciseAutoInput';
+
+// Vrijednost svake stavke jednaka je broju koji piše na njoj (1, 2, 3...)
+const SETS_OPTIONS = Array.from({ length: 10 }, (_, i) => i + 1);
+const REPS_OPTIONS = Array.from({ length: 20 }, (_, i) => i + 1);
+const RPE_OPTIONS = Array.from({ length: 11 }, (_, i) => 5 + i * 0.5);
 
 const AddExerciseModal = ({
   modalVisible,
-  setModalVisible,
+  onClose,
   NewExerciseName,
   setNewExerciseName,
   selectedReps,
@@ -24,7 +28,6 @@ const AddExerciseModal = ({
   weight,
   setWeight,
   editingExercise,
-  setEditingExercise,
   handleSave,
 }) => {
   return (
@@ -32,7 +35,7 @@ const AddExerciseModal = ({
       visible={modalVisible}
       animationType="slide"
       transparent
-      onRequestClose={() => setModalVisible(false)}
+      onRequestClose={onClose}
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
@@ -53,33 +56,22 @@ const AddExerciseModal = ({
               style={styles.textInput}
               placeholder="Weight in kgs"
               placeholderTextColor="#888"
-              keyboardType="numeric"
-              value={weight}
+              keyboardType="decimal-pad"
+              value={String(weight ?? '')}
               onChangeText={setWeight}
             />
           </View>
 
           <View style={styles.modalSelect}>
             <Text style={styles.label}>Sets</Text>
-            <View>
-              <RNPickerSelect
-                onValueChange={(value) => setSelectedSets(value)}
-                value={selectedSets}
-                placeholder={{ label: 'Odaberi broj setova', value: null }}
-                items={Array.from({ length: 10 }, (_, i) => ({
-                  label: String(i + 1),
-                  value: i + 1,
-                }))}
-              />
-            </View>
             <View style={styles.pickerWrapper}>
               <Picker
                 selectedValue={selectedSets}
                 onValueChange={(itemValue) => setSelectedSets(itemValue)}
                 style={styles.input}
               >
-                {Array.from({ length: 10 }, (_, i) => (
-                  <Picker.Item key={i} label={i + 1} value={parseInt(i)} />
+                {SETS_OPTIONS.map((n) => (
+                  <Picker.Item key={n} label={String(n)} value={n} />
                 ))}
               </Picker>
             </View>
@@ -93,8 +85,8 @@ const AddExerciseModal = ({
                 onValueChange={(itemValue) => setSelectedReps(itemValue)}
                 style={styles.input}
               >
-                {Array.from({ length: 20 }, (_, i) => (
-                  <Picker.Item key={i} label={i + 1} value={parseInt(i)} />
+                {REPS_OPTIONS.map((n) => (
+                  <Picker.Item key={n} label={String(n)} value={n} />
                 ))}
               </Picker>
             </View>
@@ -108,22 +100,15 @@ const AddExerciseModal = ({
                 onValueChange={(itemValue) => setSelectedRPE(itemValue)}
                 style={styles.input}
               >
-                {Array.from({ length: 11 }, (_, i) => (
-                  <Picker.Item
-                    key={i}
-                    label={(5 + i * 0.5).toFixed(1)}
-                    value={parseFloat((5 + i * 0.5).toFixed(1))}
-                  />
+                {RPE_OPTIONS.map((n) => (
+                  <Picker.Item key={n} label={n.toFixed(1)} value={n} />
                 ))}
               </Picker>
             </View>
           </View>
 
           <View style={styles.modalButtons}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setModalVisible(false)}
-            >
+            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
 

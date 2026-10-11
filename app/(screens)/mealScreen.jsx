@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,23 +14,36 @@ import { useDate } from '@/contexts/DateContext';
 import MealRender from '@/components/MealRender';
 import AddMealModal from '@/components/AddMealModal';
 import saiyanService from '@/services/saiyanService';
+import { parseNumber } from '@/utils/parseNumber';
+
+const round1 = (n) => Math.round(n * 10) / 10;
 
 const MealsScreen = () => {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { selectedDate } = useDate();
 
   const [meals, setMeals] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [NewMealName, setNewMealName] = useState('');
-  const [protein, setProtein] = useState(10);
-  const [calories, setCalories] = useState(3);
-  const [totalCalories, setTotalCalories] = useState(0);
-  const [totalProtein, setTotalProtein] = useState(0);
+  const [newMealName, setNewMealName] = useState('');
+  // Inputi rade sa stringovima, pretvaramo ih u brojeve tek pri spremanju
+  const [protein, setProtein] = useState('');
+  const [calories, setCalories] = useState('');
   //for editing
   const [editingMeal, setEditingMeal] = useState(null);
-  const { selectedDate } = useDate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Ukupne vrijednosti se računaju iz liste, pa se osvježe nakon svake promjene
+  const { totalCalories, totalProtein } = useMemo(() => {
+    let cal = 0;
+    let prot = 0;
+    meals.forEach((meal) => {
+      cal += Number(meal.calories) || 0;
+      prot += Number(meal.protein) || 0;
+    });
+    return { totalCalories: round1(cal), totalProtein: round1(prot) };
+  }, [meals]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -52,80 +65,97 @@ const MealsScreen = () => {
       setError(response.error);
       Alert.alert('Error', response.error);
     } else {
-      let meals = response.data;
+      let list = response.data;
       if (selectedDate) {
-        meals = meals.filter((meal) => {
+        list = list.filter((meal) => {
           const mealDate = new Date(meal.createdAt).toISOString().split('T')[0];
           return mealDate === selectedDate;
         });
       }
-      setMeals(meals);
+      setMeals(list);
       setError(null);
-
-      let totalCalories = 0;
-      let totalProtein = 0;
-      meals.forEach((meal) => {
-        totalCalories += Number(meal.calories) || 0;
-        totalProtein += Number(meal.protein) || 0;
-      });
-
-      setTotalCalories(totalCalories);
-      setTotalProtein(totalProtein);
     }
 
     setLoading(false);
   };
-  //   Add new Meal
 
+  // Vraća formu na početno stanje
+  const resetForm = () => {
+    setEditingMeal(null);
+    setNewMealName('');
+    setCalories('');
+    setProtein('');
+  };
+
+  const openAddModal = () => {
+    resetForm();
+    setModalVisible(true);
+  };
+
+  // Cancel i zatvaranje modala uvijek čiste formu
+  const closeModal = () => {
+    resetForm();
+    setModalVisible(false);
+  };
+
+  //   Add new Meal / update existing
   const handleSave = async () => {
-    if (calories === '') return;
+    if (!newMealName.trim()) {
+      Alert.alert('Meal', 'Enter a meal name');
+      return;
+    }
+
+    const caloriesValue = parseNumber(calories, NaN);
+    if (Number.isNaN(caloriesValue)) {
+      Alert.alert('Meal', 'Enter the calories');
+      return;
+    }
+
     const dateToSave = selectedDate
       ? new Date(selectedDate) // koristi selectedDate iz kalendara
-      : new Date(); // današnji datum ako ništa nije odabranor
+      : new Date(); // današnji datum ako ništa nije odabrano
     const newData = {
       user_id: user.$id,
       createdAt: dateToSave.toISOString(),
-      name: String(NewMealName).trim(),
-      protein: parseFloat(protein),
-      calories: parseFloat(calories),
+      mealName: newMealName.trim(),
+      protein: parseNumber(protein), // prazno polje = 0
+      calories: caloriesValue,
     };
-    if (editingMeal) {
-      // Update existing
 
+    if (editingMeal) {
       const response = await saiyanService.updateMeal({
         id: editingMeal.$id,
         ...newData,
       });
 
-      if (!response.error) {
-        setMeals((prev) =>
-          prev.map((e) => (e.$id === editingMeal.$id ? response.data : e))
-        );
+      if (response.error) {
+        Alert.alert('Error', response.error);
+        return;
       }
+
+      setMeals((prev) =>
+        prev.map((m) => (m.$id === editingMeal.$id ? response.data : m))
+      );
     } else {
       const response = await saiyanService.addMeal(newData);
 
       if (response.error) {
-        Alert.alert('error', response.error);
-      } else {
-        setMeals([...meals, response.data]);
+        Alert.alert('Error', response.error);
+        return;
       }
+
+      setMeals((prev) => [...prev, response.data]);
     }
 
-    setEditingMeal(null);
-    setNewMealName('');
-    setCalories('');
-    setProtein('');
-    setModalVisible(false);
+    closeModal();
   };
 
   // edit meal
-
-  const openEditModal = (Meal) => {
-    setNewMealName(Meal.name); // Or whole object if you're editing more fields
-    setEditingMeal(Meal); // Save reference
-    setProtein(Meal.protein);
-    setCalories(Meal.calories);
+  const openEditModal = (meal) => {
+    setNewMealName(meal.mealName ?? '');
+    setEditingMeal(meal); // Save reference
+    setProtein(String(meal.protein ?? ''));
+    setCalories(String(meal.calories ?? ''));
     setModalVisible(true);
   };
 
@@ -142,9 +172,9 @@ const MealsScreen = () => {
         onPress: async () => {
           const response = await saiyanService.deleteMeal(id);
           if (response.error) {
-            Alert.alert('error', response.error);
+            Alert.alert('Error', response.error);
           } else {
-            setMeals(meals.filter((Meal) => Meal.$id !== id));
+            setMeals((prev) => prev.filter((meal) => meal.$id !== id));
           }
         },
       },
@@ -185,24 +215,20 @@ const MealsScreen = () => {
         <Text style={styles.totalText}>Ukupno kalorija: {totalCalories}</Text>
         <Text style={styles.totalText}>Ukupno proteina: {totalProtein}g</Text>
       </View>
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => setModalVisible(true)}
-      >
+      <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
         <Text style={styles.addButtonText}>+ Add Meal</Text>
       </TouchableOpacity>
       {/* Modal */}
       <AddMealModal
         modalVisible={modalVisible}
-        setModalVisible={setModalVisible}
-        mealName={NewMealName}
+        onClose={closeModal}
+        mealName={newMealName}
         setMealName={setNewMealName}
         protein={protein}
         setProtein={setProtein}
         calories={calories}
         setCalories={setCalories}
         editingMeal={editingMeal}
-        setEditingMeal={setEditingMeal}
         handleSave={handleSave}
       />
     </View>
@@ -250,30 +276,6 @@ const styles = StyleSheet.create({
     color: '#0e0e0e',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
-    marginBottom: 15,
-    marginRight: 12,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
-    marginBottom: 15,
-    flex: 1,
-    height: 50,
-  },
-  label: {
-    flex: 1,
-    fontSize: 16,
-    marginRight: 10,
   },
   errorText: {
     color: 'red',

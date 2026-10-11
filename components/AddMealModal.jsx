@@ -9,7 +9,7 @@ import { Modal } from 'react-native';
 
 const AddMealModal = ({
   modalVisible,
-  setModalVisible,
+  onClose,
   mealName,
   setMealName,
   calories,
@@ -17,7 +17,6 @@ const AddMealModal = ({
   protein,
   setProtein,
   editingMeal,
-  setEditingMeal,
   handleSave,
 }) => {
   return (
@@ -25,7 +24,7 @@ const AddMealModal = ({
       visible={modalVisible}
       animationType="slide"
       transparent
-      onRequestClose={() => setModalVisible(false)}
+      onRequestClose={onClose}
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
@@ -39,7 +38,6 @@ const AddMealModal = ({
               style={styles.textInput}
               placeholder="Jesi li jeo?"
               placeholderTextColor={'#888'}
-              keyboardType="text"
               value={mealName}
               onChangeText={setMealName}
             />
@@ -51,8 +49,8 @@ const AddMealModal = ({
               style={styles.textInput}
               placeholder=">200kcal"
               placeholderTextColor={'#888'}
-              keyboardType="numeric"
-              value={calories}
+              keyboardType="decimal-pad"
+              value={String(calories ?? '')}
               onChangeText={setCalories}
             />
           </View>
@@ -63,16 +61,13 @@ const AddMealModal = ({
               style={styles.textInput}
               placeholder=">10g proto"
               placeholderTextColor={'#888'}
-              keyboardType="numeric"
-              value={protein}
+              keyboardType="decimal-pad"
+              value={String(protein ?? '')}
               onChangeText={setProtein}
             />
           </View>
           <View style={styles.modalButtons}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setModalVisible(false)}
-            >
+            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
 

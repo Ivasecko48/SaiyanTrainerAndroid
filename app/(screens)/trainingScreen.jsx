@@ -14,20 +14,26 @@ import { useDate } from '@/contexts/DateContext';
 import ExerciseRender from '@/components/ExerciseRender';
 import AddExerciseModal from '@/components/AddExerciseModal';
 import saiyanService from '@/services/saiyanService';
+import { parseNumber } from '@/utils/parseNumber';
+
+const DEFAULT_SETS = 1;
+const DEFAULT_REPS = 1;
+const DEFAULT_RPE = 8.5;
 
 const TrainingScreen = () => {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
+  const { selectedDate, refresh } = useDate();
+
   const [exercise, setExercise] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [NewExerciseName, setNewExerciseName] = useState('');
-  const [selectedReps, setSelectedReps] = useState(1);
-  const [selectedSets, setSelectedSets] = useState(1);
-  const [selectedRPE, setSelectedRPE] = useState(8.5);
+  const [selectedReps, setSelectedReps] = useState(DEFAULT_REPS);
+  const [selectedSets, setSelectedSets] = useState(DEFAULT_SETS);
+  const [selectedRPE, setSelectedRPE] = useState(DEFAULT_RPE);
   const [weight, setWeight] = useState('');
   //for editing
   const [editingExercise, setEditingExercise] = useState(null);
-  const { selectedDate } = useDate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -48,7 +54,7 @@ const TrainingScreen = () => {
     const response = await saiyanService.getExercises(user.$id);
     if (response.error) {
       setError(response.error);
-      Alert.alert('Errror', response.error);
+      Alert.alert('Error', response.error);
     } else {
       let exercises = response.data;
       if (selectedDate) {
@@ -63,61 +69,82 @@ const TrainingScreen = () => {
 
     setLoading(false);
   };
-  // Add new Exercise
 
+  // Vraća formu na početno stanje
+  const resetForm = () => {
+    setEditingExercise(null);
+    setNewExerciseName('');
+    setWeight('');
+    setSelectedSets(DEFAULT_SETS);
+    setSelectedReps(DEFAULT_REPS);
+    setSelectedRPE(DEFAULT_RPE);
+  };
+
+  const openAddModal = () => {
+    resetForm();
+    setModalVisible(true);
+  };
+
+  // Cancel i zatvaranje modala uvijek čiste formu, da se slučajno
+  // ne uređuje prethodna vježba kad sljedeći put dodaješ novu
+  const closeModal = () => {
+    resetForm();
+    setModalVisible(false);
+  };
+
+  // Add new Exercise / update existing
   const handleSave = async () => {
     if (NewExerciseName.trim() === '') return;
     const dateToSave = selectedDate
       ? new Date(selectedDate) // koristi selectedDate iz kalendara
-      : new Date(); // današnji datum ako ništa nije odabranor
+      : new Date(); // današnji datum ako ništa nije odabrano
     const newData = {
       user_id: user.$id,
       createdAt: dateToSave.toISOString(),
       name: String(NewExerciseName).trim(),
-      weight: parseFloat(weight) || 0, // Ensure number
-      sets: selectedSets || 1,
-      reps: selectedReps || 1,
+      weight: parseNumber(weight), // prihvaća i "82,5"
+      sets: selectedSets || DEFAULT_SETS,
+      reps: selectedReps || DEFAULT_REPS,
       rpe: selectedRPE || 5.0,
     };
-    if (editingExercise) {
-      // Update existing
 
+    if (editingExercise) {
       const response = await saiyanService.updateExercise({
         id: editingExercise.$id,
         ...newData,
       });
 
-      if (!response.error) {
-        setExercise((prev) =>
-          prev.map((e) => (e.$id === editingExercise.$id ? response.data : e))
-        );
+      if (response.error) {
+        Alert.alert('Error', response.error);
+        return;
       }
+
+      setExercise((prev) =>
+        prev.map((e) => (e.$id === editingExercise.$id ? response.data : e))
+      );
     } else {
       const response = await saiyanService.addExercise(newData);
 
       if (response.error) {
-        Alert.alert('error', response.error);
-      } else {
-        setExercise([...exercise, response.data]);
+        Alert.alert('Error', response.error);
+        return;
       }
+
+      setExercise((prev) => [...prev, response.data]);
     }
 
-    setEditingExercise(null);
-    setNewExerciseName('');
-    setSelectedSets(1);
-    setSelectedReps(1);
-    setSelectedRPE(8.5);
-    setModalVisible(false);
+    refresh(); // osvježi oznake u kalendaru
+    closeModal();
   };
 
   //edit ex
-
-  const openEditModal = (exercise) => {
-    setNewExerciseName(exercise.name); // Or whole object if you're editing more fields
-    setEditingExercise(exercise); // Save reference
-    setSelectedRPE(exercise.rpe);
-    setSelectedReps(exercise.reps);
-    setSelectedSets(exercise.sets);
+  const openEditModal = (item) => {
+    setNewExerciseName(item.name);
+    setEditingExercise(item); // Save reference
+    setWeight(String(item.weight ?? ''));
+    setSelectedSets(item.sets);
+    setSelectedReps(item.reps);
+    setSelectedRPE(item.rpe);
     setModalVisible(true);
   };
 
@@ -134,9 +161,10 @@ const TrainingScreen = () => {
         onPress: async () => {
           const response = await saiyanService.deleteExer(id);
           if (response.error) {
-            Alert.alert('error', response.error);
+            Alert.alert('Error', response.error);
           } else {
-            setExercise(exercise.filter((exercise) => exercise.$id !== id));
+            setExercise((prev) => prev.filter((ex) => ex.$id !== id));
+            refresh();
           }
         },
       },
@@ -176,17 +204,14 @@ const TrainingScreen = () => {
         </>
       )}
 
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => setModalVisible(true)}
-      >
+      <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
         <Text style={styles.addButtonText}>+ Add Exercise</Text>
       </TouchableOpacity>
 
       {/* Modal */}
       <AddExerciseModal
         modalVisible={modalVisible}
-        setModalVisible={setModalVisible}
+        onClose={closeModal}
         NewExerciseName={NewExerciseName}
         setNewExerciseName={setNewExerciseName}
         selectedReps={selectedReps}
@@ -198,7 +223,6 @@ const TrainingScreen = () => {
         weight={weight}
         setWeight={setWeight}
         editingExercise={editingExercise}
-        setEditingExercise={setEditingExercise}
         handleSave={handleSave}
       />
     </View>
@@ -246,30 +270,6 @@ const styles = StyleSheet.create({
     color: '#0e0e0e',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
-    marginBottom: 15,
-    marginRight: 12,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
-    marginBottom: 15,
-    flex: 1,
-    height: 50,
-  },
-  label: {
-    flex: 1,
-    fontSize: 16,
-    marginRight: 10,
   },
   errorText: {
     color: 'red',
