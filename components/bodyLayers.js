@@ -1,0 +1,48 @@
+// GENERIRANO: slojevi tijela kao PNG slike (nema nativnih biblioteka).
+// Redoslijed je redoslijed crtanja. Sloj tipa 'fill' se boji, ostali ostaju crni/bijeli.
+// box = [x, y, širina, visina] u jedinicama platna 200 x 840.
+
+export const CANVAS = { width: 200, height: 840 };
+
+export const LAYERS = [
+  { id: 'neutral', kind: 'neutral', box: [0, 0, 200, 840], src: require('../assets/body/neutral.png') },
+  { id: 'front_traps_fill', kind: 'fill', muscle: 'traps', box: [59, 57, 82, 19], src: require('../assets/body/front_traps_fill.png') },
+  { id: 'front_traps_line', kind: 'line', box: [59, 57, 82, 19], src: require('../assets/body/front_traps_line.png') },
+  { id: 'front_chest_fill', kind: 'fill', muscle: 'chest', box: [57, 67, 86, 47], src: require('../assets/body/front_chest_fill.png') },
+  { id: 'front_chest_line', kind: 'line', box: [57, 67, 86, 47], src: require('../assets/body/front_chest_line.png') },
+  { id: 'front_shoulders_fill', kind: 'fill', muscle: 'shoulders', box: [32, 64, 136, 53], src: require('../assets/body/front_shoulders_fill.png') },
+  { id: 'front_shoulders_line', kind: 'line', box: [32, 64, 136, 53], src: require('../assets/body/front_shoulders_line.png') },
+  { id: 'front_biceps_fill', kind: 'fill', muscle: 'biceps', box: [27, 106, 146, 60], src: require('../assets/body/front_biceps_fill.png') },
+  { id: 'front_biceps_line', kind: 'line', box: [27, 106, 146, 60], src: require('../assets/body/front_biceps_line.png') },
+  { id: 'front_forearms_fill', kind: 'fill', muscle: 'forearms', box: [15, 162, 170, 62], src: require('../assets/body/front_forearms_fill.png') },
+  { id: 'front_forearms_line', kind: 'line', box: [15, 162, 170, 62], src: require('../assets/body/front_forearms_line.png') },
+  { id: 'front_abs_fill', kind: 'fill', muscle: 'abs', box: [79, 111, 42, 69], src: require('../assets/body/front_abs_fill.png') },
+  { id: 'front_abs_line', kind: 'line', box: [79, 111, 42, 69], src: require('../assets/body/front_abs_line.png') },
+  { id: 'front_obliques_fill', kind: 'fill', muscle: 'obliques', box: [58, 101, 84, 79], src: require('../assets/body/front_obliques_fill.png') },
+  { id: 'front_obliques_line', kind: 'line', box: [58, 101, 84, 79], src: require('../assets/body/front_obliques_line.png') },
+  { id: 'front_quads_fill', kind: 'fill', muscle: 'quads', box: [58, 206, 84, 92], src: require('../assets/body/front_quads_fill.png') },
+  { id: 'front_quads_line', kind: 'line', box: [58, 206, 84, 92], src: require('../assets/body/front_quads_line.png') },
+  { id: 'front_calves_fill', kind: 'fill', muscle: 'calves', box: [60, 310, 80, 84], src: require('../assets/body/front_calves_fill.png') },
+  { id: 'front_calves_line', kind: 'line', box: [60, 310, 80, 84], src: require('../assets/body/front_calves_line.png') },
+  { id: 'front_lines', kind: 'line', box: [76, 128, 48, 164], src: require('../assets/body/front_lines.png') },
+  { id: 'back_calves_fill', kind: 'fill', muscle: 'calves', box: [59, 731, 82, 83], src: require('../assets/body/back_calves_fill.png') },
+  { id: 'back_calves_line', kind: 'line', box: [59, 731, 82, 83], src: require('../assets/body/back_calves_line.png') },
+  { id: 'back_hamstrings_fill', kind: 'fill', muscle: 'hamstrings', box: [58, 650, 84, 68], src: require('../assets/body/back_hamstrings_fill.png') },
+  { id: 'back_hamstrings_line', kind: 'line', box: [58, 650, 84, 68], src: require('../assets/body/back_hamstrings_line.png') },
+  { id: 'back_lats_fill', kind: 'fill', muscle: 'lats', box: [56, 516, 88, 96], src: require('../assets/body/back_lats_fill.png') },
+  { id: 'back_lats_line', kind: 'line', box: [56, 516, 88, 96], src: require('../assets/body/back_lats_line.png') },
+  { id: 'back_lower_back_fill', kind: 'fill', muscle: 'lower_back', box: [79, 558, 42, 56], src: require('../assets/body/back_lower_back_fill.png') },
+  { id: 'back_lower_back_line', kind: 'line', box: [79, 558, 42, 56], src: require('../assets/body/back_lower_back_line.png') },
+  { id: 'back_upper_back_fill', kind: 'fill', muscle: 'upper_back', box: [57, 512, 86, 48], src: require('../assets/body/back_upper_back_fill.png') },
+  { id: 'back_upper_back_line', kind: 'line', box: [57, 512, 86, 48], src: require('../assets/body/back_upper_back_line.png') },
+  { id: 'back_traps_fill', kind: 'fill', muscle: 'traps', box: [58, 470, 84, 78], src: require('../assets/body/back_traps_fill.png') },
+  { id: 'back_traps_line', kind: 'line', box: [58, 470, 84, 78], src: require('../assets/body/back_traps_line.png') },
+  { id: 'back_shoulders_fill', kind: 'fill', muscle: 'shoulders', box: [32, 486, 136, 50], src: require('../assets/body/back_shoulders_fill.png') },
+  { id: 'back_shoulders_line', kind: 'line', box: [32, 486, 136, 50], src: require('../assets/body/back_shoulders_line.png') },
+  { id: 'back_triceps_fill', kind: 'fill', muscle: 'triceps', box: [26, 524, 148, 62], src: require('../assets/body/back_triceps_fill.png') },
+  { id: 'back_triceps_line', kind: 'line', box: [26, 524, 148, 62], src: require('../assets/body/back_triceps_line.png') },
+  { id: 'back_forearms_fill', kind: 'fill', muscle: 'forearms', box: [15, 582, 170, 62], src: require('../assets/body/back_forearms_fill.png') },
+  { id: 'back_forearms_line', kind: 'line', box: [15, 582, 170, 62], src: require('../assets/body/back_forearms_line.png') },
+  { id: 'back_glutes_fill', kind: 'fill', muscle: 'glutes', box: [59, 604, 82, 52], src: require('../assets/body/back_glutes_fill.png') },
+  { id: 'back_glutes_line', kind: 'line', box: [59, 604, 82, 52], src: require('../assets/body/back_glutes_line.png') },
+];
