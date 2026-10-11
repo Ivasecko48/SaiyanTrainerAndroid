@@ -15,6 +15,13 @@ import ExerciseRender from '@/components/ExerciseRender';
 import AddExerciseModal from '@/components/AddExerciseModal';
 import saiyanService from '@/services/saiyanService';
 import { parseNumber } from '@/utils/parseNumber';
+import { normalizeMuscles } from '@/utils/muscles';
+import { todayKey } from '@/utils/dates';
+import {
+  loadCatalog,
+  saveCustomExercise,
+  findInCatalog,
+} from '@/services/exerciseCatalog';
 
 const DEFAULT_SETS = 1;
 const DEFAULT_REPS = 1;
@@ -32,6 +39,9 @@ const TrainingScreen = () => {
   const [selectedSets, setSelectedSets] = useState(DEFAULT_SETS);
   const [selectedRPE, setSelectedRPE] = useState(DEFAULT_RPE);
   const [weight, setWeight] = useState('');
+  // popis poznatih vježbi (biblioteka + vlastite) i mišići trenutne vježbe
+  const [catalog, setCatalog] = useState([]);
+  const [selectedMuscles, setSelectedMuscles] = useState([]);
   //for editing
   const [editingExercise, setEditingExercise] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -48,6 +58,12 @@ const TrainingScreen = () => {
       fetchExercises();
     }
   }, [selectedDate, user]);
+
+  useEffect(() => {
+    if (user) {
+      loadCatalog(user.$id).then(setCatalog);
+    }
+  }, [user?.$id]);
 
   const fetchExercises = async () => {
     setLoading(true);
@@ -75,6 +91,7 @@ const TrainingScreen = () => {
     setEditingExercise(null);
     setNewExerciseName('');
     setWeight('');
+    setSelectedMuscles([]);
     setSelectedSets(DEFAULT_SETS);
     setSelectedReps(DEFAULT_REPS);
     setSelectedRPE(DEFAULT_RPE);
@@ -92,16 +109,37 @@ const TrainingScreen = () => {
     setModalVisible(false);
   };
 
+  // Dodir na prijedlog: popuni naziv i mišiće te vježbe
+  const handleSelectExercise = (exercise) => {
+    setNewExerciseName(exercise.name);
+    setSelectedMuscles(normalizeMuscles(exercise.muscles));
+  };
+
+  // Tipkanje naziva: ako je naziv točno poznata vježba, a mišići još nisu odabrani, popuni ih
+  const handleNameChange = (text) => {
+    setNewExerciseName(text);
+    if (selectedMuscles.length === 0) {
+      const known = findInCatalog(catalog, text);
+      if (known) setSelectedMuscles(normalizeMuscles(known.muscles));
+    }
+  };
+
   // Add new Exercise / update existing
   const handleSave = async () => {
     if (NewExerciseName.trim() === '') return;
-    const dateToSave = selectedDate
-      ? new Date(selectedDate) // koristi selectedDate iz kalendara
-      : new Date(); // današnji datum ako ništa nije odabrano
+
+    if (selectedMuscles.length === 0) {
+      Alert.alert('Mišićne skupine', 'Odaberi barem jednu mišićnu skupinu.');
+      return;
+    }
+
+    // koristi selectedDate iz kalendara, a inače današnji (lokalni) datum
+    const dateToSave = new Date(selectedDate || todayKey());
     const newData = {
       user_id: user.$id,
       createdAt: dateToSave.toISOString(),
       name: String(NewExerciseName).trim(),
+      muscles: selectedMuscles,
       weight: parseNumber(weight), // prihvaća i "82,5"
       sets: selectedSets || DEFAULT_SETS,
       reps: selectedReps || DEFAULT_REPS,
@@ -133,6 +171,13 @@ const TrainingScreen = () => {
       setExercise((prev) => [...prev, response.data]);
     }
 
+    // nova vlastita vježba ide u korisnikov popis (s mišićima), poznata se ažurira
+    await saveCustomExercise(user.$id, {
+      name: newData.name,
+      muscles: newData.muscles,
+    });
+    setCatalog(await loadCatalog(user.$id));
+
     refresh(); // osvježi oznake u kalendaru
     closeModal();
   };
@@ -142,6 +187,11 @@ const TrainingScreen = () => {
     setNewExerciseName(item.name);
     setEditingExercise(item); // Save reference
     setWeight(String(item.weight ?? ''));
+    // stari unosi nemaju mišiće: probaj ih pronaći po nazivu vježbe
+    const own = normalizeMuscles(item.muscles);
+    setSelectedMuscles(
+      own.length ? own : normalizeMuscles(findInCatalog(catalog, item.name)?.muscles)
+    );
     setSelectedSets(item.sets);
     setSelectedReps(item.reps);
     setSelectedRPE(item.rpe);
@@ -212,8 +262,12 @@ const TrainingScreen = () => {
       <AddExerciseModal
         modalVisible={modalVisible}
         onClose={closeModal}
+        catalog={catalog}
         NewExerciseName={NewExerciseName}
-        setNewExerciseName={setNewExerciseName}
+        setNewExerciseName={handleNameChange}
+        onSelectExercise={handleSelectExercise}
+        selectedMuscles={selectedMuscles}
+        setSelectedMuscles={setSelectedMuscles}
         selectedReps={selectedReps}
         setSelectedReps={setSelectedReps}
         selectedSets={selectedSets}
@@ -253,7 +307,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   deleteCell: {
-    width: 15,
+    width: 41, // 26 (olovka) + 15 (brisanje), da stupci ostanu poravnati
   },
   addButton: {
     position: 'absolute',

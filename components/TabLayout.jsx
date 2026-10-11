@@ -1,5 +1,5 @@
-import { Tabs } from 'expo-router';
-import { Feather, Ionicons } from '@expo/vector-icons';
+import { Tabs, usePathname } from 'expo-router';
+import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   TouchableOpacity,
   Alert,
@@ -44,6 +44,9 @@ export default function TabLayout() {
   const { selectedDate, setSelectedDate, refreshKey } = useDate();
   const { user } = useAuth();
   const [exercises, setExercises] = useState([]);
+  const pathname = usePathname();
+  // Tab s mišićima prikazuje cijeli tekući tjedan, pa kalendar tamo nema smisla
+  const showCalendarButton = !pathname.includes('muscleScreen');
 
   // Učitaj dane s vježbama za oznake u kalendaru.
   // Ponovo se učitava kad se vježbe promijene (refreshKey) ili korisnik zamijeni.
@@ -115,6 +118,17 @@ export default function TabLayout() {
 
           headerTintColor: '#fff',
           tabBarIcon: ({ color, size }) => {
+            // Tab s mišićima ima ikonu ruke koja radi biceps curl
+            if (route.name === 'muscleScreen') {
+              return (
+                <MaterialCommunityIcons
+                  name="arm-flex"
+                  size={size}
+                  color={color}
+                />
+              );
+            }
+
             let iconName;
 
             switch (route.name) {
@@ -141,17 +155,21 @@ export default function TabLayout() {
           name="mealScreen"
           options={{ title: 'Big man', headerRight: () => <HeaderLogout /> }}
         />
-        {/* AI chat je privremeno skriven iz tabova dok ga ne popravimo */}
-        <Tabs.Screen name="chatWithAI" options={{ href: null }} />
+        <Tabs.Screen
+          name="muscleScreen"
+          options={{ title: 'Mišići', headerRight: () => <HeaderLogout /> }}
+        />
       </Tabs>
 
       {/* FAB Button */}
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => setCalendarVisible(true)}
-      >
-        <Feather name="calendar" size={26} color="#fff" />
-      </TouchableOpacity>
+      {showCalendarButton && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => setCalendarVisible(true)}
+        >
+          <Feather name="calendar" size={26} color="#fff" />
+        </TouchableOpacity>
+      )}
 
       {/* Calendar Modal */}
       <Modal

@@ -1,5 +1,6 @@
 import databaseService from './databaseService';
 import { ID, Query } from 'react-native-appwrite';
+import { normalizeMuscles } from '../utils/muscles';
 
 // appwrite db and coll id
 const dbId = process.env.EXPO_PUBLIC_APPWRITE_DB_ID;
@@ -60,9 +61,15 @@ const saiyanService = {
   },
 
   // Add new ex
-  async addExercise({ user_id, createdAt, name, weight, sets, reps, rpe }) {
+  // `muscles` je niz ključeva mišićnih skupina i obavezan je (barem jedna)
+  async addExercise({ user_id, createdAt, name, weight, sets, reps, rpe, muscles }) {
     if (!name) {
       return { error: 'Exercise name cant be empty' };
+    }
+
+    const cleanMuscles = normalizeMuscles(muscles);
+    if (cleanMuscles.length === 0) {
+      return { error: 'Odaberi barem jednu mišićnu skupinu' };
     }
 
     const data = {
@@ -72,6 +79,7 @@ const saiyanService = {
       sets,
       reps,
       rpe,
+      muscles: cleanMuscles,
       user_id: user_id,
     };
 
@@ -123,13 +131,19 @@ const saiyanService = {
   },
 
   // Update ex
-  async updateExercise({ id, name, weight, sets, reps, rpe }) {
+  async updateExercise({ id, name, weight, sets, reps, rpe, muscles }) {
+    const cleanMuscles = normalizeMuscles(muscles);
+    if (cleanMuscles.length === 0) {
+      return { error: 'Odaberi barem jednu mišićnu skupinu' };
+    }
+
     const response = await databaseService.updateDocument(dbId, exerColId, id, {
       name,
       weight,
       sets,
       reps,
       rpe,
+      muscles: cleanMuscles,
     });
 
     if (response?.error) {

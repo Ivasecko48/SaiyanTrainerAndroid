@@ -4,10 +4,13 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import { Modal } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import ExerciseAutocompleteInput from './ExerciseAutoInput';
+import MuscleChips from './MuscleChips';
+import { findInCatalog } from '@/services/exerciseCatalog';
 
 // Vrijednost svake stavke jednaka je broju koji piše na njoj (1, 2, 3...)
 const SETS_OPTIONS = Array.from({ length: 10 }, (_, i) => i + 1);
@@ -17,8 +20,12 @@ const RPE_OPTIONS = Array.from({ length: 11 }, (_, i) => 5 + i * 0.5);
 const AddExerciseModal = ({
   modalVisible,
   onClose,
+  catalog,
   NewExerciseName,
   setNewExerciseName,
+  onSelectExercise,
+  selectedMuscles,
+  setSelectedMuscles,
   selectedReps,
   setSelectedReps,
   selectedSets,
@@ -30,6 +37,10 @@ const AddExerciseModal = ({
   editingExercise,
   handleSave,
 }) => {
+  const isNewName =
+    NewExerciseName.trim().length > 0 &&
+    !findInCatalog(catalog, NewExerciseName);
+
   return (
     <Modal
       visible={modalVisible}
@@ -43,69 +54,92 @@ const AddExerciseModal = ({
             {' '}
             {editingExercise ? 'Edit Exercise' : 'Add Exercise'}
           </Text>
-          <View style={styles.modalSelect}>
-            <Text style={styles.label}>Naziv vježbe</Text>
-          </View>
-          <ExerciseAutocompleteInput
-            value={NewExerciseName}
-            onChange={setNewExerciseName}
-          />
-          <View style={styles.modalSelect}>
-            <Text style={styles.label}>Weight</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Weight in kgs"
-              placeholderTextColor="#888"
-              keyboardType="decimal-pad"
-              value={String(weight ?? '')}
-              onChangeText={setWeight}
+
+          <ScrollView
+            style={styles.body}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.modalSelect}>
+              <Text style={styles.label}>Naziv vježbe</Text>
+            </View>
+            <ExerciseAutocompleteInput
+              value={NewExerciseName}
+              onChange={setNewExerciseName}
+              onSelect={onSelectExercise}
+              catalog={catalog}
             />
-          </View>
 
-          <View style={styles.modalSelect}>
-            <Text style={styles.label}>Sets</Text>
-            <View style={styles.pickerWrapper}>
-              <Picker
-                selectedValue={selectedSets}
-                onValueChange={(itemValue) => setSelectedSets(itemValue)}
-                style={styles.input}
-              >
-                {SETS_OPTIONS.map((n) => (
-                  <Picker.Item key={n} label={String(n)} value={n} />
-                ))}
-              </Picker>
+            <View style={styles.modalSelect}>
+              <Text style={styles.label}>Weight</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Weight in kgs"
+                placeholderTextColor="#888"
+                keyboardType="decimal-pad"
+                value={String(weight ?? '')}
+                onChangeText={setWeight}
+              />
             </View>
-          </View>
 
-          <View style={styles.modalSelect}>
-            <Text style={styles.label}>Reps</Text>
-            <View style={styles.pickerWrapper}>
-              <Picker
-                selectedValue={selectedReps}
-                onValueChange={(itemValue) => setSelectedReps(itemValue)}
-                style={styles.input}
-              >
-                {REPS_OPTIONS.map((n) => (
-                  <Picker.Item key={n} label={String(n)} value={n} />
-                ))}
-              </Picker>
+            <View style={styles.modalSelect}>
+              <Text style={styles.label}>Sets</Text>
+              <View style={styles.pickerWrapper}>
+                <Picker
+                  selectedValue={selectedSets}
+                  onValueChange={(itemValue) => setSelectedSets(itemValue)}
+                  style={styles.input}
+                >
+                  {SETS_OPTIONS.map((n) => (
+                    <Picker.Item key={n} label={String(n)} value={n} />
+                  ))}
+                </Picker>
+              </View>
             </View>
-          </View>
 
-          <View style={styles.modalSelect}>
-            <Text style={styles.label}>RPE</Text>
-            <View style={styles.pickerWrapper}>
-              <Picker
-                selectedValue={selectedRPE}
-                onValueChange={(itemValue) => setSelectedRPE(itemValue)}
-                style={styles.input}
-              >
-                {RPE_OPTIONS.map((n) => (
-                  <Picker.Item key={n} label={n.toFixed(1)} value={n} />
-                ))}
-              </Picker>
+            <View style={styles.modalSelect}>
+              <Text style={styles.label}>Reps</Text>
+              <View style={styles.pickerWrapper}>
+                <Picker
+                  selectedValue={selectedReps}
+                  onValueChange={(itemValue) => setSelectedReps(itemValue)}
+                  style={styles.input}
+                >
+                  {REPS_OPTIONS.map((n) => (
+                    <Picker.Item key={n} label={String(n)} value={n} />
+                  ))}
+                </Picker>
+              </View>
             </View>
-          </View>
+
+            <View style={styles.modalSelect}>
+              <Text style={styles.label}>RPE</Text>
+              <View style={styles.pickerWrapper}>
+                <Picker
+                  selectedValue={selectedRPE}
+                  onValueChange={(itemValue) => setSelectedRPE(itemValue)}
+                  style={styles.input}
+                >
+                  {RPE_OPTIONS.map((n) => (
+                    <Picker.Item key={n} label={n.toFixed(1)} value={n} />
+                  ))}
+                </Picker>
+              </View>
+            </View>
+
+            <Text style={styles.sectionLabel}>
+              Mišićne skupine (barem jedna)
+            </Text>
+            {isNewName && (
+              <Text style={styles.hint}>
+                Nova vježba: odaberi mišiće koje radi, spremit će se u tvoj popis.
+              </Text>
+            )}
+            <MuscleChips
+              selected={selectedMuscles}
+              onChange={setSelectedMuscles}
+            />
+          </ScrollView>
 
           <View style={styles.modalButtons}>
             <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
@@ -123,12 +157,6 @@ const AddExerciseModal = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -136,12 +164,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    flex: 1,
     backgroundColor: '#fff',
     padding: 20,
     borderRadius: 10,
-    width: '84%',
-    maxHeight: '80%',
+    width: '88%',
+    maxHeight: '88%',
+  },
+  body: {
+    flexGrow: 0,
   },
   modalTitle: {
     fontSize: 20,
@@ -161,9 +191,7 @@ const styles = StyleSheet.create({
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    position: 'absolute',
-    bottom: 30,
-    left: 20,
+    marginTop: 14,
   },
   cancelButton: {
     backgroundColor: '#ccc',
@@ -218,6 +246,16 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     marginRight: 10,
+  },
+  sectionLabel: {
+    fontSize: 16,
+    marginTop: 4,
+    marginBottom: 6,
+  },
+  hint: {
+    fontSize: 12,
+    color: '#888',
+    marginBottom: 8,
   },
 });
 
