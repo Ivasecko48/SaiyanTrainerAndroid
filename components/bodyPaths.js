@@ -1,4 +1,4 @@
-// Podaci za crtanje tijela (react-native-svg).
+// Podaci o obliku tijela (koriste se za generiranje slika i za prepoznavanje dodira na mišić).
 // Svaka figura ima viewBox 200 x 420, a sredina tijela je na x = 100.
 //
 // - `full`    oblici koji se crtaju jednom (glava, vrat)
@@ -32,7 +32,7 @@ export const FIGURES = {
       chest: [
         'M101 71 C 112 67, 126 69, 137 74 C 141 84, 142 94, 139 101 C 128 111, 112 114, 101 111 Z',
       ],
-      shoulders: [
+      front_delts: [
         'M137 68 C 151 63, 164 72, 166 88 C 167 99, 163 109, 158 115 L 147 108 C 141 98, 139 84, 137 68 Z',
       ],
       biceps: [
@@ -92,8 +92,11 @@ export const FIGURES = {
       traps: [
         'M100 52 L109 58 C 121 62, 131 66, 140 70 C 137 82, 130 94, 118 108 C 112 114, 106 120, 100 126 Z',
       ],
-      shoulders: [
-        'M140 70 C 152 65, 164 73, 166 88 C 167 99, 163 108, 158 114 L 147 106 C 142 96, 141 84, 140 70 Z',
+      side_delts: [
+        'M150.53 68.85 C 158.3 70.43, 164.6 77.5, 166 88 C 167 99, 163 108, 158 114 L 153.05 110.4 C 156 98, 156 82, 150.53 68.85 Z',
+      ],
+      rear_delts: [
+        'M140 70 C 143.6 68.5, 147.2 68.17, 150.53 68.85 C 156 82, 156 98, 153.05 110.4 L 147 106 C 142 96, 141 84, 140 70 Z',
       ],
       triceps: [
         'M146 106 L158 114 C 168 130, 172 146, 172 162 L 153 164 C 150 148, 146 128, 146 106 Z',

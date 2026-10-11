@@ -2,14 +2,14 @@
 // Ključ je naziv vježbe, malim slovima. Datoteka s vježbama ostaje nepromijenjena.
 const MAP = {
   // Prsa
-  'bench press': ['chest', 'triceps', 'shoulders'],
-  'incline bench press': ['chest', 'shoulders', 'triceps'],
+  'bench press': ['chest', 'triceps', 'front_delts'],
+  'incline bench press': ['chest', 'front_delts', 'triceps'],
   'decline bench press': ['chest', 'triceps'],
   'chest fly': ['chest'],
   'cable crossover': ['chest'],
-  'push-up': ['chest', 'triceps', 'shoulders'],
+  'push-up': ['chest', 'triceps', 'front_delts'],
   'incline push-up': ['chest', 'triceps'],
-  'decline push-up': ['chest', 'shoulders', 'triceps'],
+  'decline push-up': ['chest', 'front_delts', 'triceps'],
   'close-grip push-up': ['triceps', 'chest'],
   'isometric chest squeeze': ['chest'],
 
@@ -21,21 +21,21 @@ const MAP = {
   'bent-over row': ['upper_back', 'lats', 'biceps'],
   deadlift: ['lower_back', 'glutes', 'hamstrings', 'traps'],
   'straight arm pulldown': ['lats'],
-  'reverse fly': ['shoulders', 'upper_back'],
+  'reverse fly': ['rear_delts', 'upper_back'],
   'good morning': ['lower_back', 'hamstrings', 'glutes'],
   superman: ['lower_back', 'glutes'],
 
   // Ramena
-  'overhead press': ['shoulders', 'triceps'],
-  'front raise': ['shoulders'],
-  'lateral raise': ['shoulders'],
-  'rear delt fly': ['shoulders', 'upper_back'],
-  'arnold press': ['shoulders', 'triceps'],
-  'push press': ['shoulders', 'triceps'],
+  'overhead press': ['front_delts', 'side_delts', 'triceps'],
+  'front raise': ['front_delts'],
+  'lateral raise': ['side_delts'],
+  'rear delt fly': ['rear_delts', 'upper_back'],
+  'arnold press': ['front_delts', 'side_delts', 'triceps'],
+  'push press': ['front_delts', 'side_delts', 'triceps'],
   shrug: ['traps'],
-  'z press': ['shoulders', 'triceps'],
-  'y raise': ['shoulders', 'traps'],
-  'face pull': ['shoulders', 'upper_back'],
+  'z press': ['front_delts', 'side_delts', 'triceps'],
+  'y raise': ['side_delts', 'rear_delts', 'traps'],
+  'face pull': ['rear_delts', 'upper_back'],
 
   // Noge
   squat: ['quads', 'glutes'],
@@ -61,7 +61,7 @@ const MAP = {
   'overhead triceps extension': ['triceps'],
   skullcrusher: ['triceps'],
   'close-grip bench press': ['triceps', 'chest'],
-  dips: ['triceps', 'chest', 'shoulders'],
+  dips: ['triceps', 'chest', 'front_delts'],
 
   // Trbuh
   crunch: ['abs'],
@@ -80,7 +80,7 @@ const MAP = {
 export const COARSE_GROUP_TO_MUSCLES = {
   Chest: ['chest'],
   Back: ['lats', 'upper_back'],
-  Shoulders: ['shoulders'],
+  Shoulders: ['front_delts', 'side_delts'],
   Legs: ['quads', 'glutes'],
   Core: ['abs'],
   Biceps: ['biceps'],

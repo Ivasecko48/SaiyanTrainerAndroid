@@ -1,8 +1,10 @@
-// 15 mišićnih skupina. `key` se sprema u bazu uz svaku vježbu, `label` se prikazuje u aplikaciji.
+// 17 mišićnih skupina. `key` se sprema u bazu uz svaku vježbu, `label` se prikazuje u aplikaciji.
 // Isti ključevi koriste se i za bojanje tijela u components/bodyPaths.js.
 export const MUSCLES = [
   { key: 'chest', label: 'Prsa' },
-  { key: 'shoulders', label: 'Ramena' },
+  { key: 'front_delts', label: 'Prednje rame' },
+  { key: 'side_delts', label: 'Srednje rame' },
+  { key: 'rear_delts', label: 'Zadnje rame' },
   { key: 'biceps', label: 'Biceps' },
   { key: 'triceps', label: 'Triceps' },
   { key: 'forearms', label: 'Podlaktice' },
@@ -19,6 +21,11 @@ export const MUSCLES = [
 ];
 
 export const MUSCLE_KEYS = MUSCLES.map((m) => m.key);
+
+// Stari ključevi iz baze koji su se kasnije podijelili na više skupina
+const LEGACY_ALIASES = {
+  shoulders: ['front_delts', 'side_delts', 'rear_delts'],
+};
 
 export const MUSCLE_LABELS = MUSCLES.reduce((acc, m) => {
   acc[m.key] = m.label;
@@ -44,6 +51,7 @@ export const normalizeMuscles = (value) => {
 
   const cleaned = list
     .map((v) => String(v).trim())
+    .flatMap((v) => LEGACY_ALIASES[v] || [v])
     .filter((v) => MUSCLE_KEYS.includes(v));
 
   return Array.from(new Set(cleaned));

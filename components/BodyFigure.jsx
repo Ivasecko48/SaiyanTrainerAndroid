@@ -9,7 +9,8 @@ const FLIP_MS = 150;
  * Jedno tijelo koje se dodirom okreće: prednja strana <-> stražnja strana.
  *
  * - `side`    'front' ili 'back' (stanje drži roditelj)
- * - `onPress` poziva se na dodir, roditelj tada promijeni `side`
+ * - `onPress` poziva se na dodir s { x, y } u jedinicama platna (0..200, 0..420),
+ *              ili s null ako je dodir izvan slike
  * - `colors`  objekt { ključ_mišića: boja }, mišići bez boje ostaju bijeli
  *
  * Tijelo je složeno od PNG slojeva (components/bodyLayers.js). Sloj ispune svake
@@ -45,12 +46,30 @@ const BodyFigure = ({ colors = {}, side = 'front', onPress, style }) => {
   const scale = Math.min(size.width / CANVAS.width, size.height / CANVAS.height);
   const ready = Number.isFinite(scale) && scale > 0;
 
+  const handlePress = (event) => {
+    if (!onPress) return;
+    if (!ready) {
+      onPress(null);
+      return;
+    }
+
+    // slika je centrirana u Pressable-u; preračunaj dodir u jedinice platna
+    const { locationX, locationY } = event.nativeEvent;
+    const left = (size.width - CANVAS.width * scale) / 2;
+    const top = (size.height - CANVAS.height * scale) / 2;
+    const x = (locationX - left) / scale;
+    const y = (locationY - top) / scale;
+
+    const insideFigure = x >= 0 && x <= CANVAS.width && y >= 0 && y <= CANVAS.height;
+    onPress(insideFigure ? { x, y } : null);
+  };
+
   return (
     <Pressable
       style={[styles.root, style]}
-      onPress={onPress}
+      onPress={handlePress}
       accessibilityRole="button"
-      accessibilityLabel="Okreni tijelo"
+      accessibilityLabel="Tijelo: dodirni mišić ili prazno mjesto za okretanje"
       onLayout={(event) => {
         const { width, height } = event.nativeEvent.layout;
         setSize({ width, height });
@@ -58,6 +77,7 @@ const BodyFigure = ({ colors = {}, side = 'front', onPress, style }) => {
     >
       {ready && (
         <Animated.View
+          pointerEvents="none"
           style={{
             width: CANVAS.width * scale,
             height: CANVAS.height * scale,
