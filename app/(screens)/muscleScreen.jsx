@@ -29,6 +29,7 @@ const MuscleScreen = () => {
   const [catalog, setCatalog] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [side, setSide] = useState('front'); // 'front' | 'back'
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -98,7 +99,14 @@ const MuscleScreen = () => {
 
       <View style={styles.row}>
         <View style={styles.figure}>
-          <BodyFigure colors={colors} />
+          <BodyFigure
+            colors={colors}
+            side={side}
+            onPress={() => setSide((current) => (current === 'front' ? 'back' : 'front'))}
+          />
+          <Text style={styles.caption}>
+            {side === 'front' ? 'Prednja strana' : 'Stražnja strana'} · dodirni za okretanje
+          </Text>
         </View>
 
         <ScrollView
@@ -166,7 +174,13 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   figure: {
-    flex: 1,
+    flex: 1.25,
+  },
+  caption: {
+    textAlign: 'center',
+    fontSize: 12,
+    color: '#888',
+    paddingTop: 6,
   },
   side: {
     flex: 1,

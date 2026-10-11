@@ -157,7 +157,7 @@ export default function TabLayout() {
         />
         <Tabs.Screen
           name="muscleScreen"
-          options={{ title: 'Mišići', headerRight: () => <HeaderLogout /> }}
+          options={{ title: 'Muscle Groups', headerRight: () => <HeaderLogout /> }}
         />
       </Tabs>
 

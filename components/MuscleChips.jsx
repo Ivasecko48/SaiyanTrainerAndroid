@@ -1,5 +1,6 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { MUSCLES } from '@/utils/muscles';
+import { chipStyles as styles } from './chipStyles';
 
 // Odabir jedne ili više mišićnih skupina (dodir uključuje / isključuje skupinu)
 const MuscleChips = ({ selected = [], onChange }) => {
@@ -30,33 +31,5 @@ const MuscleChips = ({ selected = [], onChange }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  wrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  chip: {
-    borderWidth: 1,
-    borderColor: 'orange',
-    borderRadius: 16,
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    backgroundColor: '#fff',
-  },
-  chipActive: {
-    backgroundColor: '#fc7138',
-    borderColor: '#fc7138',
-  },
-  chipText: {
-    fontSize: 13,
-    color: '#333',
-  },
-  chipTextActive: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-});
 
 export default MuscleChips;

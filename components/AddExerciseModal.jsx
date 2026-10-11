@@ -10,11 +10,12 @@ import { Modal } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import ExerciseAutocompleteInput from './ExerciseAutoInput';
 import MuscleChips from './MuscleChips';
+import NumberChips from './NumberChips';
+import { REPS_OPTIONS, formatReps } from '@/utils/reps';
 import { findInCatalog } from '@/services/exerciseCatalog';
 
 // Vrijednost svake stavke jednaka je broju koji piše na njoj (1, 2, 3...)
 const SETS_OPTIONS = Array.from({ length: 10 }, (_, i) => i + 1);
-const REPS_OPTIONS = Array.from({ length: 20 }, (_, i) => i + 1);
 const RPE_OPTIONS = Array.from({ length: 11 }, (_, i) => 5 + i * 0.5);
 
 const AddExerciseModal = ({
@@ -82,34 +83,23 @@ const AddExerciseModal = ({
               />
             </View>
 
-            <View style={styles.modalSelect}>
-              <Text style={styles.label}>Sets</Text>
-              <View style={styles.pickerWrapper}>
-                <Picker
-                  selectedValue={selectedSets}
-                  onValueChange={(itemValue) => setSelectedSets(itemValue)}
-                  style={styles.input}
-                >
-                  {SETS_OPTIONS.map((n) => (
-                    <Picker.Item key={n} label={String(n)} value={n} />
-                  ))}
-                </Picker>
-              </View>
+            <Text style={styles.sectionLabel}>Sets</Text>
+            <View style={styles.chipBlock}>
+              <NumberChips
+                options={SETS_OPTIONS}
+                value={selectedSets}
+                onChange={setSelectedSets}
+              />
             </View>
 
-            <View style={styles.modalSelect}>
-              <Text style={styles.label}>Reps</Text>
-              <View style={styles.pickerWrapper}>
-                <Picker
-                  selectedValue={selectedReps}
-                  onValueChange={(itemValue) => setSelectedReps(itemValue)}
-                  style={styles.input}
-                >
-                  {REPS_OPTIONS.map((n) => (
-                    <Picker.Item key={n} label={String(n)} value={n} />
-                  ))}
-                </Picker>
-              </View>
+            <Text style={styles.sectionLabel}>Reps</Text>
+            <View style={styles.chipBlock}>
+              <NumberChips
+                options={REPS_OPTIONS}
+                value={selectedReps}
+                onChange={setSelectedReps}
+                labelFor={formatReps}
+              />
             </View>
 
             <View style={styles.modalSelect}>
@@ -251,6 +241,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 4,
     marginBottom: 6,
+  },
+  chipBlock: {
+    marginBottom: 12,
   },
   hint: {
     fontSize: 12,
