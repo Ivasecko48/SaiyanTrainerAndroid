@@ -12,6 +12,8 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDate } from '@/contexts/DateContext';
 import ExerciseRender from '@/components/ExerciseRender';
+import TableHeader from '@/components/TableHeader';
+import { EXERCISE_COLUMNS } from '@/components/tableStyles';
 import AddExerciseModal from '@/components/AddExerciseModal';
 import saiyanService from '@/services/saiyanService';
 import { parseNumber } from '@/utils/parseNumber';
@@ -221,16 +223,7 @@ const TrainingScreen = () => {
     ]);
   };
 
-  const renderHeader = () => (
-    <View style={[styles.row, styles.header]}>
-      <Text style={styles.headerText}>Exercise</Text>
-      <Text style={styles.headerText}>Kgs</Text>
-      <Text style={styles.headerText}>Sets</Text>
-      <Text style={styles.headerText}>Reps</Text>
-      <Text style={styles.headerText}>Rpe</Text>
-      <Text style={styles.deleteCell}></Text>
-    </View>
-  );
+  const renderHeader = () => <TableHeader columns={EXERCISE_COLUMNS} />;
 
   return (
     <View style={styles.container}>
@@ -250,6 +243,8 @@ const TrainingScreen = () => {
               />
             )}
             ListHeaderComponent={renderHeader}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
           />
         </>
       )}
@@ -286,34 +281,17 @@ const TrainingScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 14,
     backgroundColor: '#fff',
   },
-  row: {
-    flexDirection: 'row',
-    paddingVertical: 10,
-    paddingHorizontal: 5,
-    borderBottomWidth: 1,
-    borderColor: '#ddd',
-  },
-  header: {
-    backgroundColor: '#f0f0f0',
-  },
-
-  headerText: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  deleteCell: {
-    width: 41, // 26 (olovka) + 15 (brisanje), da stupci ostanu poravnati
+  listContent: {
+    paddingBottom: 140, // da zadnji redovi ne završe ispod gumba "+ Add"
   },
   addButton: {
     position: 'absolute',
     bottom: 60,
     left: 25,
-    right: 25,
+    right: 91, // ostavlja mjesta za ikonu kalendara s desne strane
     backgroundColor: '#fc7138',
     padding: 15,
     borderRadius: 8,

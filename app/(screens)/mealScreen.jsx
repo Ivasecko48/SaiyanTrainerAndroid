@@ -12,6 +12,8 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDate } from '@/contexts/DateContext';
 import MealRender from '@/components/MealRender';
+import TableHeader from '@/components/TableHeader';
+import { MEAL_COLUMNS } from '@/components/tableStyles';
 import AddMealModal from '@/components/AddMealModal';
 import saiyanService from '@/services/saiyanService';
 import { parseNumber } from '@/utils/parseNumber';
@@ -181,17 +183,22 @@ const MealsScreen = () => {
     ]);
   };
 
-  const renderHeader = () => (
-    <View style={[styles.row, styles.header]}>
-      <Text style={styles.headerText}>Meal</Text>
-      <Text style={styles.headerText}>Protein</Text>
-      <Text style={styles.headerText}>Calories</Text>
-      <Text style={styles.deleteCell}></Text>
-    </View>
-  );
+  const renderHeader = () => <TableHeader columns={MEAL_COLUMNS} />;
 
   return (
     <View style={styles.container}>
+      <View style={styles.summary}>
+        <View style={styles.summaryItem}>
+          <Text style={styles.summaryValue}>{totalCalories}</Text>
+          <Text style={styles.summaryLabel}>Ukupno kalorija</Text>
+        </View>
+        <View style={styles.summaryDivider} />
+        <View style={styles.summaryItem}>
+          <Text style={styles.summaryValue}>{totalProtein} g</Text>
+          <Text style={styles.summaryLabel}>Ukupno proteina</Text>
+        </View>
+      </View>
+
       {loading ? (
         <ActivityIndicator size="large" color="#fc7138" />
       ) : (
@@ -208,13 +215,11 @@ const MealsScreen = () => {
               />
             )}
             ListHeaderComponent={renderHeader}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
           />
         </>
       )}
-      <View style={styles.total}>
-        <Text style={styles.totalText}>Ukupno kalorija: {totalCalories}</Text>
-        <Text style={styles.totalText}>Ukupno proteina: {totalProtein}g</Text>
-      </View>
       <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
         <Text style={styles.addButtonText}>+ Add Meal</Text>
       </TouchableOpacity>
@@ -238,34 +243,17 @@ const MealsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 14,
     backgroundColor: '#fff',
   },
-  row: {
-    flexDirection: 'row',
-    paddingVertical: 10,
-    paddingHorizontal: 5,
-    borderBottomWidth: 1,
-    borderColor: '#ddd',
-  },
-  header: {
-    backgroundColor: '#f0f0f0',
-  },
-
-  headerText: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  deleteCell: {
-    width: 15,
+  listContent: {
+    paddingBottom: 140, // da zadnji redovi ne završe ispod gumba "+ Add"
   },
   addButton: {
     position: 'absolute',
     bottom: 60,
     left: 25,
-    right: 25,
+    right: 91, // ostavlja mjesta za ikonu kalendara s desne strane
     backgroundColor: '#fc7138',
     padding: 15,
     borderRadius: 8,
@@ -283,12 +271,32 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontSize: 16,
   },
-  total: {
-    marginLeft: 10,
+  summary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff3ec',
+    borderRadius: 12,
+    paddingVertical: 12,
+    marginBottom: 12,
   },
-  totalText: {
+  summaryItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  summaryValue: {
+    fontSize: 22,
     fontWeight: 'bold',
+    color: '#fc7138',
+  },
+  summaryLabel: {
+    fontSize: 11,
     color: '#65617e',
+    marginTop: 2,
+  },
+  summaryDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: '#f1d9cc',
   },
 });
 export default MealsScreen;

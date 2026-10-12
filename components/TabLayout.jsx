@@ -9,11 +9,15 @@ import {
   Text,
   Modal,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { Calendar } from 'react-native-calendars';
 import { useDate } from '@/contexts/DateContext';
 import saiyanService from '@/services/saiyanService';
+
+// zadana visina donje trake s tabovima (bez sigurnog razmaka na dnu ekrana)
+const TAB_BAR_HEIGHT = 49;
 
 const HeaderLogout = () => {
   const { user, logout } = useAuth();
@@ -45,6 +49,10 @@ export default function TabLayout() {
   const { user } = useAuth();
   const [exercises, setExercises] = useState([]);
   const pathname = usePathname();
+  const insets = useSafeAreaInsets();
+  // Ikona kalendara stoji na istoj visini kao gumb "+ Add" (60 px iznad donje trake s tabovima),
+  // a ne preko same trake, pa se tab "Muscle Groups" lako dodiruje
+  const calendarBottom = insets.bottom + TAB_BAR_HEIGHT + 60;
   // Tab s mišićima prikazuje cijeli tekući tjedan, pa kalendar tamo nema smisla
   const showCalendarButton = !pathname.includes('muscleScreen');
 
@@ -164,7 +172,7 @@ export default function TabLayout() {
       {/* FAB Button */}
       {showCalendarButton && (
         <TouchableOpacity
-          style={styles.fab}
+          style={[styles.fab, { bottom: calendarBottom }]}
           onPress={() => setCalendarVisible(true)}
         >
           <Feather name="calendar" size={26} color="#fff" />

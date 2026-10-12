@@ -1,57 +1,47 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { formatReps } from '@/utils/reps';
+import { musclesToText, normalizeMuscles } from '@/utils/muscles';
+import { getLibraryMuscles } from '@/utils/exerciseMuscles';
+import { tableStyles, EXERCISE_COLUMNS } from './tableStyles';
+
+const [nameCol, kgCol, setsCol, repsCol, rpeCol] = EXERCISE_COLUMNS;
 
 const ExerciseRender = ({ item, onDelete, onEdit }) => {
+  // mišići ispod naziva; stari unosi bez mišića dobiju ih iz biblioteke po nazivu
+  const own = normalizeMuscles(item.muscles);
+  const muscles = musclesToText(own.length ? own : getLibraryMuscles(item.name));
+
   return (
-    <View style={styles.row}>
-      <Text onPress={() => onEdit(item)} style={styles.cell}>
-        {item.name}
+    <View style={tableStyles.row}>
+      <Pressable style={{ flex: nameCol.flex }} onPress={() => onEdit(item)}>
+        <Text style={tableStyles.name} numberOfLines={1}>
+          {item.name}
+        </Text>
+        {muscles ? (
+          <Text style={tableStyles.sub} numberOfLines={1}>
+            {muscles}
+          </Text>
+        ) : null}
+      </Pressable>
+
+      <Text style={[tableStyles.cell, { flex: kgCol.flex }]}>{item.weight}</Text>
+      <Text style={[tableStyles.cell, { flex: setsCol.flex }]}>{item.sets}</Text>
+      <Text style={[tableStyles.cell, { flex: repsCol.flex }]}>
+        {formatReps(item.reps)}
       </Text>
-      <Text style={styles.cell}>{item.weight}</Text>
-      <Text style={styles.cell}>{item.sets}</Text>
-      <Text style={styles.cell}>{formatReps(item.reps)}</Text>
-      <Text style={styles.cell}>{item.rpe}</Text>
-      <TouchableOpacity style={styles.editButton} onPress={() => onEdit(item)}>
-        <Feather name="edit-3" size={18} color="black" />
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.deleteButton}
-        onPress={() => onDelete(item.$id)}
-      >
-        <Text style={styles.deleteIcon}>✖️</Text>
-      </TouchableOpacity>
+      <Text style={[tableStyles.cell, { flex: rpeCol.flex }]}>{item.rpe}</Text>
+
+      <View style={tableStyles.actions}>
+        <TouchableOpacity hitSlop={8} onPress={() => onEdit(item)}>
+          <Feather name="edit-3" size={18} color="#65617e" />
+        </TouchableOpacity>
+        <TouchableOpacity hitSlop={8} onPress={() => onDelete(item.$id)}>
+          <Feather name="trash-2" size={18} color="#d9534f" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    borderBottomWidth: 1,
-    borderColor: '#ddd',
-  },
-  cell: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 16,
-  },
-  deleteIcon: {
-    fontSize: 16,
-    textAlign: 'center',
-    color: 'purple',
-  },
-  editButton: {
-    width: 26,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  deleteButton: {
-    width: 15,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
 
 export default ExerciseRender;
