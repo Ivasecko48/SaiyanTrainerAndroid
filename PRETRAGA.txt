@@ -1,0 +1,42 @@
+SAIYAN TRAINER - PRETRAGA DRUGIH SAIYANA (grana: pretraga)
+=========================================================
+
+1. Što radi
+-----------
+- Na Profilu je pored "Saiyan name" ikona povećala. Otvara prozor
+  "Pronađi Saiyana": upišeš barem 2 slova imena i dobiješ popis korisnika
+  čije ime tako počinje (avatar, ime, razina aktivnosti).
+- Klik na korisnika otvara njegovu karticu:
+  - avatar, Saiyan name, razina aktivnosti (Saiyan ... Super Saiyan 3)
+  - ovaj tjedan: broj treninga (dana s vježbama), broj vježbi, ukupni volumen
+  - mišići trenirani ovaj tjedan
+  - ukupan broj treninga
+- Ne vide se tuđi pojedinačni unosi, kilaža, visina, ciljevi ni e-mail:
+  statistiku zbraja funkcija na serveru i vraća samo zbrojeve.
+- Na Profilu je prekidač "Vidljiv u pretrazi" (po defaultu uključen). Tko ga
+  isključi, ne pojavljuje se u pretrazi i njegova kartica se ne može otvoriti.
+  Sprema se odmah (Appwrite postavke korisnika: prefs.searchHidden).
+- Pretraga se otvara kad račun ima username (Saiyan name).
+- Nema praćenja/prijatelja, samo pretraga i kartica.
+
+
+2. Datoteke
+-----------
+- appwrite/functions/username-lookup/src/main.js - nove akcije "search" i "stats"
+- services/usernameService.js - search() i stats()
+- components/SaiyanSearchModal.jsx (novo) - prozor za pretragu i kartica
+- contexts/AuthContext.js - updateSearchVisible
+- app/(screens)/profileScreen.jsx - ikona povećala i prekidač vidljivosti
+
+
+3. Postavljanje u Appwrite konzoli (funkcija username-lookup)
+-------------------------------------------------------------
+1. Deployments -> novi deployment: uploadaj NOVI username-lookup.tar.gz
+   (s Desktopa) i provjeri da je aktivan.
+2. Settings -> Scopes: uz users.read označi i čitanje dokumenata
+   (zove se "documents.read" ili, u novijim verzijama, "rows.read").
+3. Settings -> Environment variables: dodaj dvije varijable
+     SAIYAN_DB_ID             = vrijednost EXPO_PUBLIC_APPWRITE_DB_ID iz .env
+     SAIYAN_COL_EXERCISES_ID  = vrijednost EXPO_PUBLIC_APPWRITE_COL_EXERCISES_ID iz .env
+   Nakon promjene varijabli napravi novi deployment (ili Redeploy), da ih
+   funkcija dobije.

@@ -127,6 +127,8 @@ export const AuthProvider = ({ children }) => {
 
   const updateProfile = (profile) => savePrefs({ profile });
   const updateAvatar = (avatar) => savePrefs({ avatar });
+  // Tko se sakrije, ne pojavljuje se drugima u pretrazi Saiyana
+  const updateSearchVisible = (visible) => savePrefs({ searchHidden: !visible });
 
   return (
     <AuthContext.Provider
@@ -138,6 +140,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         updateProfile,
         updateAvatar,
+        updateSearchVisible,
         loading,
       }}
     >

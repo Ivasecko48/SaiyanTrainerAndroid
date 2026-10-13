@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Switch,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Feather } from '@expo/vector-icons';
@@ -16,6 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import KettlebellSlider from '@/components/KettlebellSlider';
 import NumberChips from '@/components/NumberChips';
 import AvatarPickerModal from '@/components/AvatarPickerModal';
+import SaiyanSearchModal from '@/components/SaiyanSearchModal';
 import { avatarImage, DEFAULT_AVATAR } from '@/components/avatars';
 import { USERNAME_HINT } from '@/services/usernameService';
 import {
@@ -62,7 +64,17 @@ const ResultRow = ({ label, value, strong }) => (
 
 const ProfileScreen = () => {
   const router = useRouter();
-  const { user, loading: authLoading, updateProfile, updateAvatar, setUsername } = useAuth();
+  const {
+    user,
+    loading: authLoading,
+    updateProfile,
+    updateAvatar,
+    setUsername,
+    updateSearchVisible,
+  } = useAuth();
+  const [searchVisible, setSearchVisible] = useState(false);
+  const [savingVisibility, setSavingVisibility] = useState(false);
+  const visibleInSearch = user?.prefs?.searchHidden !== true;
 
   const saved = user?.prefs?.profile;
   const [profile, setProfile] = useState(() => withDefaults(saved));
@@ -135,6 +147,16 @@ const ProfileScreen = () => {
     setPickerVisible(false);
   };
 
+  // Vidljivost u pretrazi Saiyana sprema se odmah
+  const handleVisibility = async (visible) => {
+    setSavingVisibility(true);
+    const response = await updateSearchVisible(visible);
+    setSavingVisibility(false);
+    if (response?.error) {
+      Alert.alert('Greška', response.error);
+    }
+  };
+
   // Username se postavlja jednom i nakon toga se ne može mijenjati
   const handleSaveUsername = async () => {
     setSavingUsername(true);
@@ -169,7 +191,21 @@ const ProfileScreen = () => {
         <View style={styles.userInfo}>
           <Text style={styles.smallLabel}>Saiyan name</Text>
           {user?.name ? (
-            <TextInput style={styles.readOnly} value={user.name} editable={false} />
+            <View style={styles.usernameRow}>
+              <TextInput
+                style={[styles.readOnly, styles.flexInput]}
+                value={user.name}
+                editable={false}
+              />
+              {/* Pretraga drugih Saiyana */}
+              <TouchableOpacity
+                style={styles.usernameButton}
+                onPress={() => setSearchVisible(true)}
+                accessibilityLabel="Pronađi Saiyana"
+              >
+                <Feather name="search" size={18} color="#fff" />
+              </TouchableOpacity>
+            </View>
           ) : (
             <>
               <View style={styles.usernameRow}>
@@ -201,6 +237,22 @@ const ProfileScreen = () => {
             </>
           )}
         </View>
+      </View>
+
+      <View style={styles.visibilityRow}>
+        <View style={styles.flexInput}>
+          <Text style={styles.visibilityTitle}>Vidljiv u pretrazi</Text>
+          <Text style={styles.visibilityHint}>
+            Drugi Saiyani mogu pronaći tvoje ime, avatara i statistiku treninga
+          </Text>
+        </View>
+        <Switch
+          value={visibleInSearch}
+          onValueChange={handleVisibility}
+          disabled={savingVisibility}
+          trackColor={{ true: '#f5b08f', false: '#ddd' }}
+          thumbColor={visibleInSearch ? ORANGE : '#f4f4f4'}
+        />
       </View>
 
       <Text style={styles.section}>Spol</Text>
@@ -344,6 +396,12 @@ const ProfileScreen = () => {
         )}
       </TouchableOpacity>
 
+      <SaiyanSearchModal
+        visible={searchVisible}
+        onClose={() => setSearchVisible(false)}
+        currentUserId={user?.$id}
+      />
+
       <AvatarPickerModal
         visible={pickerVisible}
         selected={avatar}
@@ -431,6 +489,25 @@ const styles = StyleSheet.create({
     backgroundColor: ORANGE,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  visibilityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#fff3ec',
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 4,
+  },
+  visibilityTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+  },
+  visibilityHint: {
+    fontSize: 11,
+    color: '#888',
+    marginTop: 2,
   },
   usernameHint: {
     fontSize: 11,

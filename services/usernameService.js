@@ -7,7 +7,7 @@ export const USERNAME_HINT = '3-20 znakova: mala slova, brojke, _ i .';
 export const normalizeUsername = (text) => String(text || '').trim().toLowerCase();
 
 // Poziva Appwrite Function username-lookup; vraća { data } ili { error }
-const callFunction = async (action, username) => {
+const callFunction = async (action, params) => {
   if (!config.fn.username) {
     return { error: 'Prijava korisničkim imenom još nije postavljena.' };
   }
@@ -15,7 +15,7 @@ const callFunction = async (action, username) => {
   try {
     const execution = await functions.createExecution(
       config.fn.username,
-      JSON.stringify({ action, username }),
+      JSON.stringify({ action, ...params }),
       false,
       '/',
       'POST',
@@ -41,14 +41,26 @@ const callFunction = async (action, username) => {
 const usernameService = {
   // { available } ili { error }
   async isAvailable(username) {
-    const response = await callFunction('check', username);
+    const response = await callFunction('check', { username });
     return response.error ? response : { available: Boolean(response.data.available) };
   },
 
   // { email } ili { error }
   async emailFor(username) {
-    const response = await callFunction('lookup', username);
+    const response = await callFunction('lookup', { username });
     return response.error ? response : { email: response.data.email };
+  },
+
+  // Pretraga drugih Saiyana po početku imena: { users: [{ id, username, avatar, activity }] }
+  async search(query) {
+    const response = await callFunction('search', { query: normalizeUsername(query) });
+    return response.error ? response : { users: response.data.users || [] };
+  },
+
+  // Javna kartica i statistika korisnika: { user, week, totalWorkouts }
+  async stats(userId) {
+    const response = await callFunction('stats', { userId });
+    return response.error ? response : response.data;
   },
 };
 
