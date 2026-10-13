@@ -7,7 +7,6 @@ const keyFor = (userId) => `CUSTOM_FOODS_V1:${userId}`;
 export const MY_FOODS = 'Moje namirnice';
 
 const lower = (text) => String(text || '').trim().toLowerCase();
-const round1 = (n) => Math.round(n * 10) / 10;
 
 // Vrijednosti u biblioteci su na 100 g
 const libraryItems = defaultFoods.map((food) => ({
@@ -82,11 +81,11 @@ export const findFood = (catalog, name) => {
   return (catalog || []).find((food) => lower(food.name) === wanted) || null;
 };
 
-// Kalorije i proteini za zadanu količinu u gramima
+// Kalorije i proteini za zadanu količinu u gramima, zaokruženo na cijele brojeve
 export const scaleFood = (food, grams) => {
   const factor = grams / food.grams;
   return {
-    calories: round1(food.kcal * factor),
-    protein: round1(food.protein * factor),
+    calories: Math.round(food.kcal * factor),
+    protein: Math.round(food.protein * factor),
   };
 };

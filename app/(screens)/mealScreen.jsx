@@ -154,7 +154,8 @@ const MealsScreen = () => {
       return;
     }
 
-    const caloriesValue = parseNumber(calories, NaN);
+    // Kalorije i proteini se spremaju kao cijeli brojevi
+    const caloriesValue = Math.round(parseNumber(calories, NaN));
     if (Number.isNaN(caloriesValue)) {
       Alert.alert('Meal', 'Enter the calories');
       return;
@@ -163,7 +164,7 @@ const MealsScreen = () => {
     const dateToSave = selectedDate
       ? new Date(selectedDate) // koristi selectedDate iz kalendara
       : new Date(); // današnji datum ako ništa nije odabrano
-    const proteinValue = parseNumber(protein); // prazno polje = 0
+    const proteinValue = Math.round(parseNumber(protein)); // prazno polje = 0
     const newData = {
       user_id: user.$id,
       createdAt: dateToSave.toISOString(),
