@@ -33,8 +33,9 @@ SAIYAN TRAINER - PRETRAGA DRUGIH SAIYANA (grana: pretraga)
 -------------------------------------------------------------
 1. Deployments -> novi deployment: uploadaj NOVI username-lookup.tar.gz
    (s Desktopa) i provjeri da je aktivan.
-2. Settings -> Scopes: uz users.read označi i čitanje dokumenata
-   (zove se "documents.read" ili, u novijim verzijama, "rows.read").
+2. Settings -> Scopes: uz users.read označi i "documents.read".
+   Važno: funkcija čita vježbe pozivom listDocuments, koji traži upravo
+   documents.read; samo "rows.read" nije dovoljan (kartica tada javlja grešku).
 3. Settings -> Environment variables: dodaj dvije varijable
      SAIYAN_DB_ID             = vrijednost EXPO_PUBLIC_APPWRITE_DB_ID iz .env
      SAIYAN_COL_EXERCISES_ID  = vrijednost EXPO_PUBLIC_APPWRITE_COL_EXERCISES_ID iz .env

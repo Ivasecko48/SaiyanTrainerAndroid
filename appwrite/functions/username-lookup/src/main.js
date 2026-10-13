@@ -14,7 +14,7 @@ import { Client, Users, Databases, Query } from 'node-appwrite';
 //
 // Postavke funkcije u Appwrite konzoli:
 //   - Execute access: Any (poziva se i prije prijave)
-//   - Scopes: users.read + čitanje dokumenata (documents.read / rows.read)
+//   - Scopes: users.read + documents.read (listDocuments; samo rows.read nije dovoljan)
 //   - Varijable: SAIYAN_DB_ID i SAIYAN_COL_EXERCISES_ID (ID baze i kolekcije vježbi)
 
 const USERNAME = /^[a-z0-9_.]{3,20}$/;
