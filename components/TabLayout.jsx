@@ -1,4 +1,4 @@
-import { Tabs, usePathname } from 'expo-router';
+import { Tabs, usePathname, useRouter } from 'expo-router';
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   TouchableOpacity,
@@ -8,6 +8,7 @@ import {
   View,
   Text,
   Modal,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,14 +16,17 @@ import { useEffect, useState } from 'react';
 import { Calendar } from 'react-native-calendars';
 import { useDate } from '@/contexts/DateContext';
 import saiyanService from '@/services/saiyanService';
+import { avatarImage } from '@/components/avatars';
 
 // zadana visina donje trake s tabovima (bez sigurnog razmaka na dnu ekrana)
 const TAB_BAR_HEIGHT = 26;
 // razmak ikone kalendara od donje trake
 const CALENDAR_GAP = 16;
 
-const HeaderLogout = () => {
+// Glava odabranog Saiyana (vodi na profil) + tipka za odjavu
+const HeaderActions = () => {
   const { user, logout } = useAuth();
+  const router = useRouter();
 
   const logoutAlert = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -39,9 +43,18 @@ const HeaderLogout = () => {
   };
 
   return user ? (
-    <TouchableOpacity onPress={logoutAlert} style={{ paddingRight: 14 }}>
-      <Feather name="log-out" size={24} color="white" />
-    </TouchableOpacity>
+    <View style={styles.headerActions}>
+      <TouchableOpacity
+        onPress={() => router.navigate('/(screens)/profileScreen')}
+        style={styles.headButton}
+        accessibilityLabel="Profil"
+      >
+        <Image source={avatarImage(user.prefs?.avatar)} style={styles.headIcon} />
+      </TouchableOpacity>
+      <TouchableOpacity onPress={logoutAlert} style={{ paddingRight: 14 }}>
+        <Feather name="log-out" size={24} color="white" />
+      </TouchableOpacity>
+    </View>
   ) : null;
 };
 
@@ -53,8 +66,10 @@ export default function TabLayout() {
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const calendarBottom = insets.bottom + TAB_BAR_HEIGHT + CALENDAR_GAP;
-  // Tab s mišićima prikazuje cijeli tekući tjedan, pa kalendar tamo nema smisla
-  const showCalendarButton = !pathname.includes('muscleScreen');
+  // Tab s mišićima prikazuje cijeli tekući tjedan, a profil nije vezan uz datum,
+  // pa kalendar tamo nema smisla
+  const showCalendarButton =
+    !pathname.includes('muscleScreen') && !pathname.includes('profileScreen');
 
   // Učitaj dane s vježbama za oznake u kalendaru.
   // Ponovo se učitava kad se vježbe promijene (refreshKey) ili korisnik zamijeni.
@@ -155,18 +170,27 @@ export default function TabLayout() {
           name="trainingScreen"
           options={{
             title: 'Strong Boy',
-            headerRight: () => <HeaderLogout />,
+            headerRight: () => <HeaderActions />,
           }}
         />
         <Tabs.Screen
           name="mealScreen"
-          options={{ title: 'Big man', headerRight: () => <HeaderLogout /> }}
+          options={{ title: 'Big man', headerRight: () => <HeaderActions /> }}
         />
         <Tabs.Screen
           name="muscleScreen"
           options={{
             title: 'Muscle Groups',
-            headerRight: () => <HeaderLogout />,
+            headerRight: () => <HeaderActions />,
+          }}
+        />
+        {/* Profil se otvara preko glave u zaglavlju, nije u donjoj traci */}
+        <Tabs.Screen
+          name="profileScreen"
+          options={{
+            title: 'Profil',
+            href: null,
+            headerRight: () => <HeaderActions />,
           }}
         />
       </Tabs>
@@ -217,6 +241,17 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headButton: {
+    paddingHorizontal: 10,
+  },
+  headIcon: {
+    width: 38,
+    height: 38,
+  },
   fab: {
     position: 'absolute',
     bottom: Platform.OS === 'ios' ? 40 : 70,

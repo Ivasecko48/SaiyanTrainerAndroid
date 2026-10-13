@@ -36,6 +36,18 @@ const authService = {
     }
   },
 
+  // Spremi korisničke postavke (profil). Appwrite zamijeni cijeli objekt,
+  // pa pozivatelj šalje i postojeće postavke. Vraća ažuriranog korisnika.
+  async updatePrefs(prefs) {
+    try {
+      return await account.updatePrefs(prefs);
+    } catch (error) {
+      return {
+        error: error.message || 'Saving profile failed. Try again',
+      };
+    }
+  },
+
   // Logout user
   async logout() {
     try {

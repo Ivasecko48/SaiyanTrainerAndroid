@@ -50,6 +50,25 @@ export const AuthProvider = ({ children }) => {
     await checkUser();
   };
 
+  // Profil (visina, težina, cilj...) i avatar se čuvaju u Appwrite postavkama korisnika.
+  // Appwrite zamijeni cijele postavke, pa se promjene spajaju s postojećima.
+  const savePrefs = async (changes) => {
+    const response = await authService.updatePrefs({
+      ...(user?.prefs || {}),
+      ...changes,
+    });
+
+    if (response?.error) {
+      return response;
+    }
+
+    setUser(response);
+    return { success: true };
+  };
+
+  const updateProfile = (profile) => savePrefs({ profile });
+  const updateAvatar = (avatar) => savePrefs({ avatar });
+
   return (
     <AuthContext.Provider
       value={{
@@ -57,6 +76,8 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
+        updateProfile,
+        updateAvatar,
         loading,
       }}
     >

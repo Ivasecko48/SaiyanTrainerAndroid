@@ -23,8 +23,19 @@ import {
   scaleFood,
 } from '@/services/foodCatalog';
 import { parseNumber } from '@/utils/parseNumber';
+import { dateKey } from '@/utils/dates';
+import { calcTargets, calorieStatus, proteinStatus } from '@/utils/nutrition';
 
 const round1 = (n) => Math.round(n * 10) / 10;
+
+const sumMeals = (list) =>
+  list.reduce(
+    (sum, meal) => ({
+      calories: sum.calories + (Number(meal.calories) || 0),
+      protein: sum.protein + (Number(meal.protein) || 0),
+    }),
+    { calories: 0, protein: 0 }
+  );
 
 const MealsScreen = () => {
   const router = useRouter();
@@ -47,15 +58,28 @@ const MealsScreen = () => {
   const [error, setError] = useState(null);
 
   // Ukupne vrijednosti se računaju iz liste, pa se osvježe nakon svake promjene
-  const { totalCalories, totalProtein } = useMemo(() => {
-    let cal = 0;
-    let prot = 0;
-    meals.forEach((meal) => {
-      cal += Number(meal.calories) || 0;
-      prot += Number(meal.protein) || 0;
-    });
-    return { totalCalories: round1(cal), totalProtein: round1(prot) };
-  }, [meals]);
+  const { totalCalories, totalProtein, day } = useMemo(() => {
+    const all = sumMeals(meals);
+    // Dnevni cilj se uspoređuje s odabranim danom, a kad su prikazani svi dani, s današnjim
+    const today = dateKey(new Date().toISOString());
+    const dayTotals = selectedDate
+      ? all
+      : sumMeals(meals.filter((meal) => dateKey(meal.createdAt) === today));
+    return {
+      totalCalories: round1(all.calories),
+      totalProtein: round1(all.protein),
+      day: dayTotals,
+    };
+  }, [meals, selectedDate]);
+
+  // Dnevni cilj iz profila (null dok profil nije postavljen)
+  const targets = useMemo(
+    () => calcTargets(user?.prefs?.profile),
+    [user?.prefs?.profile]
+  );
+  const kcalStatus = targets && calorieStatus(day.calories, targets);
+  const protStatus = targets && proteinStatus(day.protein, targets);
+  const goalPrefix = selectedDate ? 'Cilj' : 'Danas, cilj';
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -255,13 +279,44 @@ const MealsScreen = () => {
         <View style={styles.summaryItem}>
           <Text style={styles.summaryValue}>{totalCalories}</Text>
           <Text style={styles.summaryLabel}>Ukupno kalorija</Text>
+          {kcalStatus && (
+            <>
+              <Text style={styles.goalTarget}>
+                {goalPrefix} {targets.calories} kcal
+              </Text>
+              <Text
+                style={[styles.goalStatus, kcalStatus.ok ? styles.goalOk : styles.goalBad]}
+              >
+                {kcalStatus.text}
+              </Text>
+            </>
+          )}
         </View>
         <View style={styles.summaryDivider} />
         <View style={styles.summaryItem}>
           <Text style={styles.summaryValue}>{totalProtein} g</Text>
           <Text style={styles.summaryLabel}>Ukupno proteina</Text>
+          {protStatus && (
+            <>
+              <Text style={styles.goalTarget}>
+                {goalPrefix} {targets.protein} g
+              </Text>
+              <Text
+                style={[styles.goalStatus, protStatus.ok ? styles.goalOk : styles.goalBad]}
+              >
+                {protStatus.text}
+              </Text>
+            </>
+          )}
         </View>
       </View>
+      {!targets && (
+        <TouchableOpacity onPress={() => router.navigate('/(screens)/profileScreen')}>
+          <Text style={styles.goalHint}>
+            Postavi profil (glava gore desno) i dobit ćeš dnevni cilj kalorija i proteina →
+          </Text>
+        </TouchableOpacity>
+      )}
 
       {loading ? (
         <ActivityIndicator size="large" color="#fc7138" />
@@ -365,6 +420,29 @@ const styles = StyleSheet.create({
     width: 1,
     height: 32,
     backgroundColor: '#f1d9cc',
+  },
+  goalTarget: {
+    fontSize: 11,
+    color: '#65617e',
+    marginTop: 6,
+  },
+  goalStatus: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    marginTop: 1,
+  },
+  goalOk: {
+    color: '#2e9e4f',
+  },
+  goalBad: {
+    color: '#d63031',
+  },
+  goalHint: {
+    fontSize: 12,
+    color: '#fc7138',
+    textAlign: 'center',
+    marginTop: -4,
+    marginBottom: 12,
   },
 });
 export default MealsScreen;
