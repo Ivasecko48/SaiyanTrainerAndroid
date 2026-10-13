@@ -20,6 +20,14 @@ import saiyanService from '@/services/saiyanService';
 import { parseNumber } from '@/utils/parseNumber';
 import { normalizeMuscles } from '@/utils/muscles';
 import { inRange, withDayHeaders } from '@/utils/dates';
+import { totalVolume, formatVolume } from '@/utils/volume';
+
+const VOLUME_LABELS = {
+  day: 'Ukupni volumen dana',
+  week: 'Ukupni volumen tjedna',
+  month: 'Ukupni volumen mjeseca',
+  all: 'Ukupni volumen',
+};
 import {
   loadCatalog,
   saveCustomExercise,
@@ -63,10 +71,19 @@ const TrainingScreen = () => {
     }
   }, [range?.start, range?.end, user]);
 
-  // Jedan dan: samo vježbe; tjedan ili svi dani: vježbe s naslovom svakog dana
-  const rows = useMemo(() => {
+  // Jedan dan: samo vježbe; više dana: vježbe s naslovom (i volumenom) svakog dana.
+  // Ukupni volumen je zbroj svih prikazanih vježbi.
+  const { rows, volume } = useMemo(() => {
     const visible = exercise.filter((ex) => inRange(ex.createdAt, range));
-    return mode === 'day' ? visible : withDayHeaders(visible, mode === 'all');
+    return {
+      rows:
+        mode === 'day'
+          ? visible
+          : withDayHeaders(visible, mode === 'all', (dayItems) =>
+              formatVolume(totalVolume(dayItems)),
+            ),
+      volume: totalVolume(visible),
+    };
   }, [exercise, range, mode]);
 
   useEffect(() => {
@@ -228,6 +245,15 @@ const TrainingScreen = () => {
 
   const renderHeader = () => <TableHeader columns={EXERCISE_COLUMNS} />;
 
+  // Na dnu tablice: ukupni volumen prikazanog dana / tjedna / mjeseca
+  const renderFooter = () =>
+    rows.length > 0 ? (
+      <View style={styles.volumeTotal}>
+        <Text style={styles.volumeLabel}>{VOLUME_LABELS[mode]}</Text>
+        <Text style={styles.volumeValue}>{formatVolume(volume)}</Text>
+      </View>
+    ) : null;
+
   return (
     <View style={styles.container}>
       <RangeLabel label={rangeLabel} />
@@ -241,7 +267,7 @@ const TrainingScreen = () => {
             keyExtractor={(item) => item.$id}
             renderItem={({ item }) =>
               item.type === 'day' ? (
-                <DayHeader label={item.label} />
+                <DayHeader label={item.label} extra={item.extra} />
               ) : (
                 <ExerciseRender
                   item={item}
@@ -251,6 +277,7 @@ const TrainingScreen = () => {
               )
             }
             ListHeaderComponent={renderHeader}
+            ListFooterComponent={renderFooter}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
           />
@@ -310,6 +337,26 @@ const styles = StyleSheet.create({
     color: '#0e0e0e',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  volumeTotal: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#fff3ec',
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginTop: 8,
+  },
+  volumeLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#65617e',
+  },
+  volumeValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fc7138',
   },
   errorText: {
     color: 'red',

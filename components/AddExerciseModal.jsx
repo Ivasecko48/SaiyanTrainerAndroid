@@ -170,6 +170,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     fontSize: 16,
+    color: '#333', // inače bijel tekst kad je mobitel u tamnom načinu
     marginBottom: 12,
     marginRight: 12,
   },

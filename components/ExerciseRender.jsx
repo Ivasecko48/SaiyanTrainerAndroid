@@ -1,17 +1,26 @@
 import { View, Text, TouchableOpacity, Pressable } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { formatReps } from '@/utils/reps';
+import { exerciseVolume, formatVolume } from '@/utils/volume';
 import { tableStyles, EXERCISE_COLUMNS } from './tableStyles';
 
 const [nameCol, kgCol, setsCol, repsCol, rpeCol] = EXERCISE_COLUMNS;
 
 const ExerciseRender = ({ item, onDelete, onEdit }) => {
+  const volume = exerciseVolume(item);
+
   return (
     <View style={tableStyles.row}>
       <Pressable style={{ flex: nameCol.flex }} onPress={() => onEdit(item)}>
         <Text style={tableStyles.name} numberOfLines={1}>
           {item.name}
         </Text>
+        {/* vježbe bez kilaže (vlastita težina) nemaju volumen */}
+        {volume > 0 && (
+          <Text style={tableStyles.subText} numberOfLines={1}>
+            Vol. {formatVolume(volume)}
+          </Text>
+        )}
       </Pressable>
 
       <Text style={[tableStyles.cell, { flex: kgCol.flex }]}>

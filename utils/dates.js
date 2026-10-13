@@ -87,23 +87,30 @@ export const inRange = (iso, range) => {
   return key >= range.start && key <= range.end;
 };
 
-// Unosi poredani po danu, s naslovom dana ispred svakog dana (prikaz tjedna ili svih dana).
-// Retci naslova imaju type: 'day'.
-export const withDayHeaders = (items, newestFirst = false) => {
+// Unosi poredani po danu, s naslovom dana ispred svakog dana (prikaz tjedna, mjeseca ili
+// svih dana). Retci naslova imaju type: 'day'. Neobavezni `summarize(unosiDana)` vraća
+// tekst koji se prikazuje desno u naslovu dana (npr. volumen tog dana).
+export const withDayHeaders = (items, newestFirst = false, summarize) => {
   const sorted = [...items].sort((a, b) => {
     const diff = dateKey(a.createdAt).localeCompare(dateKey(b.createdAt));
     return newestFirst ? -diff : diff;
   });
 
-  const rows = [];
-  let current = null;
+  const groups = [];
   sorted.forEach((item) => {
     const key = dateKey(item.createdAt);
-    if (key !== current) {
-      current = key;
-      rows.push({ type: 'day', $id: `day-${key}`, label: formatDayShort(key) });
-    }
-    rows.push(item);
+    const last = groups[groups.length - 1];
+    if (last && last.key === key) last.items.push(item);
+    else groups.push({ key, items: [item] });
   });
-  return rows;
+
+  return groups.flatMap(({ key, items: dayItems }) => [
+    {
+      type: 'day',
+      $id: `day-${key}`,
+      label: formatDayShort(key),
+      extra: summarize ? summarize(dayItems) : null,
+    },
+    ...dayItems,
+  ]);
 };

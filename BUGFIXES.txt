@@ -58,3 +58,30 @@ Popravak: - U kalendaru je novi gumb "Cijeli mjesec": prikazuje mjesec koji je
             ekrana npr. "Listopad 2026". Trening ekran također podržava mjesec.
 Datoteke: contexts/DateContext.js, utils/dates.js, utils/nutrition.js,
           components/TabLayout.jsx, app/(screens)/mealScreen.jsx
+
+
+6. Lozinka (i ostali unosi) nevidljivi kad je mobitel u tamnom načinu
+--------------------------------------------------------------------
+Problem:  Kod prijave/registracije nisu se vidjele točkice lozinke. Aplikacija
+          prati temu mobitela (userInterfaceStyle: automatic), a polja za unos
+          nisu imala zadanu boju teksta, pa ih je Android u tamnom načinu bojao
+          u bijelo - bijeli tekst na bijeloj pozadini. Isto je vrijedilo za e-mail
+          i polja u prozorima za unos vježbi i hrane.
+Popravak: Sva polja za unos imaju tamnu boju teksta (#333), neovisno o temi mobitela.
+Datoteke: app/auth/index.jsx, components/AddExerciseModal.jsx,
+          components/AddMealModal.jsx, components/ExerciseAutoInput.jsx
+
+
+7. NOVO: volumen treninga na "Strong Boy"
+-----------------------------------------
+Što radi: Volumen vježbe = serije × ponavljanja × kilaža.
+          - Ispod naziva svake vježbe u tablici piše njezin volumen ("Vol. 2.640 kg").
+            Vježbe bez kilaže (vlastita težina) nemaju volumen.
+          - Na dnu tablice je ukupni volumen prikazanog razdoblja: dana, tjedna,
+            mjeseca ili svih dana (ovisno o filtru u kalendaru).
+          - Kod prikaza više dana svaki naslov dana desno prikazuje volumen tog dana.
+          - Kod raspona ponavljanja (15-20, 20-25, 25+) računa se donja granica
+            (15, 20, 25), jer se ona sprema u bazu.
+Datoteke: utils/volume.js (novo), components/ExerciseRender.jsx,
+          components/tableStyles.js, components/DayHeader.jsx, utils/dates.js,
+          app/(screens)/trainingScreen.jsx

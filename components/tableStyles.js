@@ -55,6 +55,11 @@ export const tableStyles = StyleSheet.create({
     fontWeight: '600',
     color: '#222',
   },
+  subText: {
+    fontSize: 11,
+    color: '#8a8590',
+    marginTop: 2,
+  },
   cell: {
     textAlign: 'center',
     fontSize: 15,

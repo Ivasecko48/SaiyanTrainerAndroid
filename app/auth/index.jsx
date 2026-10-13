@@ -123,6 +123,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     backgroundColor: '#fff',
     fontSize: 16,
+    // bez ovoga je tekst (i točkice lozinke) bijel kad je mobitel u tamnom načinu
+    color: '#333',
   },
   button: {
     backgroundColor: '#007bff',
