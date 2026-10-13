@@ -1,0 +1,51 @@
+SAIYAN TRAINER - GENERATOR TRENINGA (grana: generator-treninga)
+================================================================
+
+Besplatno i bez AI-a: trening se slaže pravilima iz tvojih podataka
+(tjedni broj treninga po mišiću, popis vježbi i tvoja povijest).
+
+1. Kako se koristi
+------------------
+Tab "Muscle Groups" -> gumb "Generiraj trening" na dnu ekrana.
+Otvara se prozorčić "Trening za danas" s popisom vježbi:
+- serije × ponavljanja (višezglobne 3 × 8-10, izolacije 3 × 10-12,
+  trbuh i listovi 3 × 15, vježbe na vrijeme poput planka 3 × 30 s)
+- mišići koje vježba radi; crvena/žuta točkica označava mišić koji je
+  ovaj tjedan netreniran / treniran jednom
+- zadnja kilaža i ponavljanja iz tvoje povijesti za tu vježbu
+Gumb "Generiraj drugi" daje drukčiju kombinaciju.
+
+
+2. Pravila (utils/workoutGenerator.js)
+--------------------------------------
+1. Prvo se pokrivaju CRVENI mišići (ovaj tjedan 0 treninga).
+2. Ako ima mjesta (najviše 8 vježbi), i ŽUTI (trenirani jednom).
+3. Vježba vrijedi više ako joj je mišić glavni (prvi u popisu) nego pomoćni,
+   pa višezglobne vježbe (npr. deadlift) pokriju više mišića odjednom.
+4. Izbjegavaju se mišići koji su već trenirani 2× ili više (zeleno).
+5. Prednost imaju vježbe koje si već radio; malo slučajnosti za raznolikost.
+6. Višezglobne vježbe idu na početak, izolacije na kraj.
+Ako neki mišić ne stane, ispod popisa piše "Nije stalo". Ako je sve zeleno,
+generator predlaže odmor.
+
+
+3. Datoteke
+-----------
+- utils/workoutGenerator.js (novo) - logika odabira vježbi
+- components/WorkoutPlanSheet.jsx (novo) - prozorčić s treningom
+- app/(screens)/muscleScreen.jsx - gumb "Generiraj trening"
+
+
+4. Vlastite vježbe (npr. "Zercher Squat")
+-----------------------------------------
+Generator bira iz:
+- biblioteke vježbi,
+- vlastitih vježbi s ovog uređaja (popis "Moje vježbe"),
+- SVIH vježbi iz tvoje povijesti treninga u Appwriteu, s mišićima koji su
+  spremljeni uz svaki unos.
+Zato se vlastita vježba pojavljuje čim je jednom upišeš, i na drugom mobitelu,
+u Expo Gou ili nakon ponovne instalacije (kad se lokalni popis izgubi).
+
+Kod dodavanja vlastite vježbe prvi označeni mišić računa se kao GLAVNI
+(npr. Zercher squat: prvo Kvadricepsi, pa Gluteusi i Trbušni). Vježbe koje
+si već radio imaju prednost pred onima iz biblioteke koje nisi.

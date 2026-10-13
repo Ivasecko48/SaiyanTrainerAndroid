@@ -14,6 +14,8 @@ import saiyanService from '@/services/saiyanService';
 import { loadCatalog, findInCatalog } from '@/services/exerciseCatalog';
 import BodyFigure from '@/components/BodyFigure';
 import MuscleExercisesSheet from '@/components/MuscleExercisesSheet';
+import WorkoutPlanSheet from '@/components/WorkoutPlanSheet';
+import { generateWorkout } from '@/utils/workoutGenerator';
 import {
   MUSCLES,
   colorForCount,
@@ -36,6 +38,9 @@ const MuscleScreen = () => {
   const [side, setSide] = useState('front'); // 'front' | 'back'
   const [selectedMuscle, setSelectedMuscle] = useState(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  // Generirani trening za mišiće koji su ovaj tjedan crveni (i žuti, ako stane)
+  const [plan, setPlan] = useState(null);
+  const [planOpen, setPlanOpen] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -100,6 +105,11 @@ const MuscleScreen = () => {
         : [],
     [selectedMuscle, catalog, exercises]
   );
+
+  const handleGenerate = () => {
+    setPlan(generateWorkout({ counts, catalog, exercises }));
+    setPlanOpen(true);
+  };
 
   const openMuscle = (key) => {
     setSelectedMuscle(key);
@@ -176,6 +186,23 @@ const MuscleScreen = () => {
         </ScrollView>
       </View>
 
+      <Pressable
+        style={[styles.generateButton, loading && styles.generateDisabled]}
+        onPress={handleGenerate}
+        disabled={loading}
+      >
+        <Feather name="zap" size={18} color="#fff" />
+        <Text style={styles.generateText}>Generiraj trening</Text>
+      </Pressable>
+
+      <WorkoutPlanSheet
+        visible={planOpen}
+        onClose={() => setPlanOpen(false)}
+        onRegenerate={handleGenerate}
+        plan={plan}
+        counts={counts}
+      />
+
       <MuscleExercisesSheet
         visible={sheetOpen}
         onClose={() => setSheetOpen(false)}
@@ -196,6 +223,25 @@ const LegendItem = ({ color, text }) => (
 );
 
 const styles = StyleSheet.create({
+  generateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#fc7138',
+    borderRadius: 8,
+    paddingVertical: 13,
+    marginTop: 10,
+    elevation: 3,
+  },
+  generateDisabled: {
+    opacity: 0.6,
+  },
+  generateText: {
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: 'bold',
+  },
   container: {
     flex: 1,
     padding: 12,
