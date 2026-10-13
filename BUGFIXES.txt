@@ -1,0 +1,60 @@
+SAIYAN TRAINER - POPRAVCI (grana: bugfix)
+==========================================
+
+1. RPE kod unosa vježbe prikazivao je tri točkice
+-------------------------------------------------
+Problem:  U prozoru "Add Exercise" RPE se birao padajućim izbornikom (Picker)
+          koji je bio stisnut u okvir širok 60 px s 50 px unutarnjeg razmaka,
+          pa se odabrani broj nije mogao ispisati i vidjele su se samo "...".
+Popravak: Picker je zamijenjen "oblačićima" (5.0, 5.5 ... 10.0), istima kao kod
+          Sets i Reps. Odabrana vrijednost je uvijek vidljiva.
+Datoteka: components/AddExerciseModal.jsx
+
+
+2. Kalendar se nije zatvarao dodirom izvan njega
+------------------------------------------------
+Problem:  Prozor s kalendarom mogao se zatvoriti samo gumbom "Zatvori".
+Popravak: Dodir na zatamnjeni dio ekrana oko kalendara sada ga zatvara, a dodir
+          unutar kalendara i dalje radi normalno. Isto ponašanje dodano je i
+          prozoru "Choose your Saiyan" (odabir avatara).
+Datoteke: components/TabLayout.jsx, components/AvatarPickerModal.jsx
+
+
+3. Ikona aplikacije je Super Saiyan Vegeta
+------------------------------------------
+Problem:  Aplikacija je imala staru ikonu (Goku).
+Popravak: Nova ikona je glava Super Saiyan Vegete na narančastoj pozadini
+          (#fc7138), u svim veličinama koje Android traži: klasična, okrugla i
+          prilagodljiva (adaptive) ikona za Android 8+.
+Datoteke: assets/images/vegeta_icon.png, assets/images/adaptive-icon.png, app.json,
+          android/app/src/main/res/mipmap-*/ic_launcher*.png (stari .webp obrisani),
+          android/app/src/main/res/values/colors.xml
+Napomena: Nova ikona se vidi tek nakon novog builda APK-a, a ne kroz Expo.
+
+
+4. Promjena avatara izbacivala je s Profila na "Strong Boy"
+----------------------------------------------------------
+Problem:  Nakon prijave početni ekran (app/index.jsx) ostaje ispod ostalih ekrana.
+          Njegov useEffect je pratio cijeli objekt korisnika i kod svake promjene
+          radio router.replace na "Strong Boy". Spremanje avatara (a i profila)
+          mijenja korisnika, pa je aplikacija skakala s Profila.
+Popravak: Početni ekran sada reagira samo na prijavu i odjavu (promjenu user.$id),
+          pa spremanje avatara i profila više ne mijenja ekran.
+Datoteka: app/index.jsx
+
+
+5. Hrana: zbrojevi i cilj za cijeli tjedan ili mjesec
+-----------------------------------------------------
+Problem:  Kod prikaza tjedna "Big man" je uspoređivao samo današnje obroke s dnevnim
+          ciljem, a prikaz cijelog mjeseca nije postojao.
+Popravak: - U kalendaru je novi gumb "Cijeli mjesec": prikazuje mjesec koji je
+            trenutno otvoren u kalendaru (strelicama možeš odabrati bilo koji mjesec).
+          - Kod prikaza tjedna i mjeseca gore se zbrajaju svi unosi tog razdoblja,
+            a cilj je dnevni cilj × broj dana (npr. 2000 kcal dnevno -> tjedan
+            14000 kcal, listopad 62000 kcal). Isto vrijedi i za proteine.
+          - Zeleno/crveno radi kao i za jedan dan, ali za cijelo razdoblje
+            (npr. kod mršavljenja zeleno dok je zbroj tjedna ispod 14000 kcal).
+          - Na vrhu ekrana piše "Cilj za tjedan" / "Cilj za mjesec", a naslov
+            ekrana npr. "Listopad 2026". Trening ekran također podržava mjesec.
+Datoteke: contexts/DateContext.js, utils/dates.js, utils/nutrition.js,
+          components/TabLayout.jsx, app/(screens)/mealScreen.jsx

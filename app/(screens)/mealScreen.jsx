@@ -24,7 +24,7 @@ import {
   scaleFood,
 } from '@/services/foodCatalog';
 import { parseNumber } from '@/utils/parseNumber';
-import { dateKey, todayKey, inRange, withDayHeaders } from '@/utils/dates';
+import { dateKey, todayKey, inRange, withDayHeaders, daysInRange } from '@/utils/dates';
 import { calcTargets, calorieStatus, proteinStatus } from '@/utils/nutrition';
 
 const round1 = (n) => Math.round(n * 10) / 10;
@@ -69,25 +69,37 @@ const MealsScreen = () => {
   }, [meals, range, mode]);
 
   // Ukupne vrijednosti se računaju iz liste, pa se osvježe nakon svake promjene.
-  // Dnevni cilj se uspoređuje s prikazanim danom, a kod tjedna i svih dana s današnjim.
+  // Cilj se uspoređuje s prikazanim danom; kod tjedna i mjeseca sa zbrojem cijelog
+  // razdoblja (dnevni cilj × broj dana); kod svih dana s današnjim danom.
+  const isPeriod = mode === 'week' || mode === 'month';
+  const days = isPeriod ? daysInRange(range) : 1;
   const goalDay = mode === 'day' ? selectedDate : todayKey();
-  const { totalCalories, totalProtein, day } = useMemo(() => {
+  const { totalCalories, totalProtein, compared } = useMemo(() => {
     const all = sumMeals(visible);
     return {
       totalCalories: round1(all.calories),
       totalProtein: round1(all.protein),
-      day: sumMeals(meals.filter((meal) => dateKey(meal.createdAt) === goalDay)),
+      compared: isPeriod
+        ? all
+        : sumMeals(meals.filter((meal) => dateKey(meal.createdAt) === goalDay)),
     };
-  }, [visible, meals, goalDay]);
+  }, [visible, meals, goalDay, isPeriod]);
 
   // Dnevni cilj iz profila (null dok profil nije postavljen)
   const targets = useMemo(
     () => calcTargets(user?.prefs?.profile),
     [user?.prefs?.profile]
   );
-  const kcalStatus = targets && calorieStatus(day.calories, targets);
-  const protStatus = targets && proteinStatus(day.protein, targets);
-  const goalPrefix = goalDay === todayKey() ? 'Danas, cilj' : 'Cilj';
+  const kcalStatus = targets && calorieStatus(compared.calories, targets, days);
+  const protStatus = targets && proteinStatus(compared.protein, targets, days);
+  const goalPrefix =
+    mode === 'week'
+      ? 'Cilj za tjedan'
+      : mode === 'month'
+        ? 'Cilj za mjesec'
+        : goalDay === todayKey()
+          ? 'Danas, cilj'
+          : 'Cilj';
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -283,7 +295,7 @@ const MealsScreen = () => {
           {kcalStatus && (
             <>
               <Text style={styles.goalTarget}>
-                {goalPrefix} {targets.calories} kcal
+                {goalPrefix} {targets.calories * days} kcal
               </Text>
               <Text
                 style={[styles.goalStatus, kcalStatus.ok ? styles.goalOk : styles.goalBad]}
@@ -300,7 +312,7 @@ const MealsScreen = () => {
           {protStatus && (
             <>
               <Text style={styles.goalTarget}>
-                {goalPrefix} {targets.protein} g
+                {goalPrefix} {targets.protein * days} g
               </Text>
               <Text
                 style={[styles.goalStatus, protStatus.ok ? styles.goalOk : styles.goalBad]}

@@ -7,7 +7,6 @@ import {
   ScrollView,
 } from 'react-native';
 import { Modal } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import ExerciseAutocompleteInput from './ExerciseAutoInput';
 import MuscleChips from './MuscleChips';
 import NumberChips from './NumberChips';
@@ -102,19 +101,14 @@ const AddExerciseModal = ({
               />
             </View>
 
-            <View style={styles.modalSelect}>
-              <Text style={styles.label}>RPE</Text>
-              <View style={styles.pickerWrapper}>
-                <Picker
-                  selectedValue={selectedRPE}
-                  onValueChange={(itemValue) => setSelectedRPE(itemValue)}
-                  style={styles.input}
-                >
-                  {RPE_OPTIONS.map((n) => (
-                    <Picker.Item key={n} label={n.toFixed(1)} value={n} />
-                  ))}
-                </Picker>
-              </View>
+            <Text style={styles.sectionLabel}>RPE</Text>
+            <View style={styles.chipBlock}>
+              <NumberChips
+                options={RPE_OPTIONS}
+                value={selectedRPE}
+                onChange={setSelectedRPE}
+                labelFor={(n) => n.toFixed(1)}
+              />
             </View>
 
             <Text style={styles.sectionLabel}>
@@ -211,27 +205,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
-  },
-  input: {
-    fontSize: 16,
-    color: '#000',
-    backgroundColor: '#fff',
-    width: 80,
-    height: 50,
-    textAlign: 'center',
-  },
-  pickerWrapper: {
-    paddingLeft: 50,
-    width: 60,
-    minHeight: 40,
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: 'orange',
-    borderRadius: 8,
-    marginBottom: 12,
-    overflow: 'hidden', // da zaobljeni rubovi izgledaju uredno
-    justifyContent: 'center', // vertikalno centriranje
-    alignItems: 'center',
   },
   label: {
     flex: 1,

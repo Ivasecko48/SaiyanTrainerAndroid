@@ -15,11 +15,13 @@ const HomeScreen = () => {
   const { user, loading } = useAuth();
   const router = useRouter();
 
+  // Ovaj ekran ostaje ispod ostalih nakon prijave, pa reagira samo na prijavu/odjavu
+  // (user.$id), a ne na svaku promjenu korisnika (npr. spremanje profila ili avatara)
   useEffect(() => {
     if (!loading && user) {
       router.replace('/(screens)/trainingScreen');
     }
-  }, [user, loading]);
+  }, [user?.$id, loading]);
 
   if (loading) {
     return (

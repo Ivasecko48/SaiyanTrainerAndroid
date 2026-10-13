@@ -27,6 +27,38 @@ export const weekRange = (ref = new Date()) => {
 // 'dd.MM.' za prikaz u naslovu
 export const formatShort = (date) => `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.`;
 
+const MONTHS = [
+  'Siječanj', 'Veljača', 'Ožujak', 'Travanj', 'Svibanj', 'Lipanj',
+  'Srpanj', 'Kolovoz', 'Rujan', 'Listopad', 'Studeni', 'Prosinac',
+];
+
+// Mjesec koji sadrži zadani datum: { start, end } kao 'YYYY-MM-DD' i naziv 'Listopad 2026'
+export const monthRange = (ref = new Date()) => {
+  const start = new Date(ref.getFullYear(), ref.getMonth(), 1);
+  const end = new Date(ref.getFullYear(), ref.getMonth() + 1, 0);
+  return {
+    start: toKey(start),
+    end: toKey(end),
+    label: `${MONTHS[start.getMonth()]} ${start.getFullYear()}`,
+  };
+};
+
+// Broj dana u rasponu { start, end } (uključivo)
+export const daysInRange = ({ start, end }) =>
+  Math.round((fromKey(end) - fromKey(start)) / 86400000) + 1;
+
+// Svi dani u rasponu kao 'YYYY-MM-DD'
+export const keysInRange = ({ start, end }) => {
+  const keys = [];
+  const day = fromKey(start);
+  const last = fromKey(end);
+  while (day <= last) {
+    keys.push(toKey(day));
+    day.setDate(day.getDate() + 1);
+  }
+  return keys;
+};
+
 // 'YYYY-MM-DD' u lokalni datum
 export const fromKey = (key) => {
   const [y, m, d] = key.split('-').map(Number);

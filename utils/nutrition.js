@@ -177,9 +177,10 @@ export const calcTargets = (profile) => {
 // Tolerancija za "održavanje": unutar ovoliko kcal od cilja smatra se ispunjenim
 const MAINTAIN_TOLERANCE = 100;
 
-// Tekst i boja ispod ukupnih kalorija na ekranu s obrocima
-export const calorieStatus = (eaten, targets) => {
-  const diff = Math.round(targets.calories - eaten);
+// Tekst i boja ispod ukupnih kalorija na ekranu s obrocima.
+// `days` > 1 kod prikaza tjedna/mjeseca: cilj (i tolerancija) se množi brojem dana.
+export const calorieStatus = (eaten, targets, days = 1) => {
+  const diff = Math.round(targets.calories * days - eaten);
 
   if (targets.goal === 'lose') {
     return diff >= 0
@@ -193,7 +194,7 @@ export const calorieStatus = (eaten, targets) => {
       : { ok: true, text: 'Cilj ispunjen ✓' };
   }
 
-  if (Math.abs(diff) <= MAINTAIN_TOLERANCE) {
+  if (Math.abs(diff) <= MAINTAIN_TOLERANCE * days) {
     return { ok: true, text: 'U cilju ✓' };
   }
   return diff > 0
@@ -201,8 +202,8 @@ export const calorieStatus = (eaten, targets) => {
     : { ok: false, text: `Preko cilja ${-diff} kcal` };
 };
 
-export const proteinStatus = (eaten, targets) => {
-  const diff = Math.round(targets.protein - eaten);
+export const proteinStatus = (eaten, targets, days = 1) => {
+  const diff = Math.round(targets.protein * days - eaten);
   return diff > 0
     ? { ok: false, text: `Fali još ${diff} g` }
     : { ok: true, text: 'Proteini ispunjeni ✓' };

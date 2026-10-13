@@ -4,7 +4,7 @@
     "slug": "SaiyanTrainer",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/goku_icon.png",
+    "icon": "./assets/images/vegeta_icon.png",
     "scheme": "saiyantrainer",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,7 +14,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#fc7138"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.marinko369.SaiyanTrainer"

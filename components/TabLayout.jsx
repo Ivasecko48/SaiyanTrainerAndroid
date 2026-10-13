@@ -9,6 +9,7 @@ import {
   Text,
   Modal,
   Image,
+  Pressable,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,6 +18,7 @@ import { Calendar } from 'react-native-calendars';
 import { useDate } from '@/contexts/DateContext';
 import saiyanService from '@/services/saiyanService';
 import { avatarImage } from '@/components/avatars';
+import { keysInRange } from '@/utils/dates';
 
 // zadana visina donje trake s tabovima (bez sigurnog razmaka na dnu ekrana)
 const TAB_BAR_HEIGHT = 26;
@@ -60,8 +62,19 @@ const HeaderActions = () => {
 
 export default function TabLayout() {
   const [calendarVisible, setCalendarVisible] = useState(false);
-  const { selectedDate, mode, range, showDay, showWeek, showAll, resetToToday, refreshKey } =
-    useDate();
+  const {
+    selectedDate,
+    mode,
+    range,
+    showDay,
+    showWeek,
+    showMonth,
+    showAll,
+    resetToToday,
+    refreshKey,
+  } = useDate();
+  // Mjesec koji je trenutno otvoren u kalendaru (za gumb "Cijeli mjesec")
+  const [visibleMonth, setVisibleMonth] = useState(selectedDate);
   const { user } = useAuth();
   const [exercises, setExercises] = useState([]);
   const pathname = usePathname();
@@ -114,10 +127,21 @@ export default function TabLayout() {
     setCalendarVisible(false);
   };
 
+  // Cijeli mjesec koji je otvoren u kalendaru
+  const handleShowMonth = () => {
+    showMonth(visibleMonth);
+    setCalendarVisible(false);
+  };
+
   // Makni filter datuma i prikaži sve dane
   const handleShowAll = () => {
     showAll();
     setCalendarVisible(false);
+  };
+
+  const openCalendar = () => {
+    setVisibleMonth(selectedDate);
+    setCalendarVisible(true);
   };
 
   const getMarkedDates = () => {
@@ -135,14 +159,11 @@ export default function TabLayout() {
       }
     });
 
-    // Prikazani dan ili svi dani prikazanog tjedna
-    if (mode === 'week') {
-      const day = new Date(`${range.start}T00:00:00Z`);
-      for (let i = 0; i < 7; i++) {
-        const key = day.toISOString().split('T')[0];
+    // Prikazani dan ili svi dani prikazanog tjedna/mjeseca
+    if (mode === 'week' || mode === 'month') {
+      keysInRange(range).forEach((key) => {
         marked[key] = { ...(marked[key] || {}), selected: true, selectedColor: '#fdb48f' };
-        day.setUTCDate(day.getUTCDate() + 1);
-      }
+      });
     } else if (mode === 'day') {
       marked[selectedDate] = {
         ...(marked[selectedDate] || {}),
@@ -224,7 +245,7 @@ export default function TabLayout() {
       {showCalendarButton && (
         <TouchableOpacity
           style={[styles.fab, { bottom: calendarBottom }]}
-          onPress={() => setCalendarVisible(true)}
+          onPress={openCalendar}
         >
           <Feather name="calendar" size={26} color="#fff" />
         </TouchableOpacity>
@@ -237,13 +258,15 @@ export default function TabLayout() {
         transparent
         onRequestClose={() => setCalendarVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+        {/* Dodir izvan kalendara ga zatvara; dodir unutar njega ne */}
+        <Pressable style={styles.modalOverlay} onPress={() => setCalendarVisible(false)}>
+          <Pressable style={styles.modalContent} onPress={() => {}}>
             <Calendar
               current={selectedDate}
               firstDay={1}
               onDayPress={handleDayPress}
               onDayLongPress={handleDayLongPress}
+              onMonthChange={(month) => setVisibleMonth(month.dateString)}
               markedDates={getMarkedDates()}
             />
             <Text style={styles.calendarHint}>
@@ -258,6 +281,12 @@ export default function TabLayout() {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.actionButton}
+                onPress={handleShowMonth}
+              >
+                <Text style={styles.actionText}>Cijeli mjesec</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.actionButton}
                 onPress={handleShowAll}
               >
                 <Text style={styles.actionText}>Svi dani</Text>
@@ -269,8 +298,8 @@ export default function TabLayout() {
                 <Text style={styles.actionText}>Zatvori</Text>
               </TouchableOpacity>
             </View>
-          </View>
-        </View>
+          </Pressable>
+        </Pressable>
       </Modal>
     </View>
   );
@@ -322,8 +351,9 @@ const styles = StyleSheet.create({
   },
   calendarActions: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    paddingHorizontal: 12,
     paddingVertical: 12,
     borderTopWidth: 1,
     borderColor: '#eee',

@@ -1,12 +1,12 @@
 import {
   Modal,
-  View,
   Text,
   Image,
   TouchableOpacity,
   ScrollView,
   StyleSheet,
   ActivityIndicator,
+  Pressable,
 } from 'react-native';
 import { AVATARS } from './avatars';
 
@@ -15,8 +15,9 @@ const ORANGE = '#fc7138';
 // Mali prozor za odabir avatara: mreža glava, dodir odmah bira lika
 const AvatarPickerModal = ({ visible, selected, saving, onSelect, onClose }) => (
   <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
-    <View style={styles.overlay}>
-      <View style={styles.content}>
+    {/* Dodir izvan prozora ga zatvara; dodir unutar njega ne */}
+    <Pressable style={styles.overlay} onPress={saving ? undefined : onClose}>
+      <Pressable style={styles.content} onPress={() => {}}>
         <Text style={styles.title}>Choose your Saiyan</Text>
 
         <ScrollView contentContainerStyle={styles.grid} showsVerticalScrollIndicator={false}>
@@ -45,8 +46,8 @@ const AvatarPickerModal = ({ visible, selected, saving, onSelect, onClose }) => 
             <Text style={styles.close}>Zatvori</Text>
           </TouchableOpacity>
         )}
-      </View>
-    </View>
+      </Pressable>
+    </Pressable>
   </Modal>
 );
 
