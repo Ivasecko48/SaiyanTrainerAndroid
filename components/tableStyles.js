@@ -2,10 +2,10 @@ import { StyleSheet } from 'react-native';
 
 // Širine stupaca (flex) dijele zaglavlje i redovi, da stupci uvijek ostanu poravnati
 export const EXERCISE_COLUMNS = [
-  { label: 'Exercise', flex: 2.4 },
+  { label: 'Exercise', flex: 3.2 },
   { label: 'Kg', flex: 1 },
   { label: 'Sets', flex: 1 },
-  { label: 'Reps', flex: 1.3 },
+  { label: 'Reps', flex: 1 },
   { label: 'RPE', flex: 1 },
 ];
 
@@ -42,7 +42,7 @@ export const tableStyles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 13,
     paddingHorizontal: 12,
     backgroundColor: '#fff',
     borderRadius: 10,
@@ -54,11 +54,6 @@ export const tableStyles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     color: '#222',
-  },
-  sub: {
-    fontSize: 11,
-    color: '#999',
-    marginTop: 2,
   },
   cell: {
     textAlign: 'center',

@@ -4,14 +4,21 @@ import {
   TextInput,
   StyleSheet,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import { Modal } from 'react-native';
+import ExerciseAutocompleteInput from './ExerciseAutoInput';
+import { findFood } from '@/services/foodCatalog';
 
 const AddMealModal = ({
   modalVisible,
   onClose,
+  catalog,
   mealName,
   setMealName,
+  onSelectFood,
+  grams,
+  setGrams,
   calories,
   setCalories,
   protein,
@@ -19,6 +26,9 @@ const AddMealModal = ({
   editingMeal,
   handleSave,
 }) => {
+  const isNewName =
+    mealName.trim().length > 0 && !findFood(catalog, mealName);
+
   return (
     <Modal
       visible={modalVisible}
@@ -32,40 +42,66 @@ const AddMealModal = ({
             {' '}
             {editingMeal ? 'Edit Meal' : 'Add Meal'}
           </Text>
-          <View style={styles.modalSelect}>
-            <Text style={styles.label}>Are you even trying to get big?</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Jesi li jeo?"
-              placeholderTextColor={'#888'}
+
+          <ScrollView
+            style={styles.body}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.modalSelect}>
+              <Text style={styles.label}>Are you even trying to get big?</Text>
+            </View>
+            <ExerciseAutocompleteInput
               value={mealName}
-              onChangeText={setMealName}
+              onChange={setMealName}
+              onSelect={onSelectFood}
+              catalog={catalog}
+              placeholder="Jesi li jeo?"
+              groupKey="category"
             />
-          </View>
+            {isNewName && (
+              <Text style={styles.hint}>
+                Nova namirnica: spremit će se u tvoj popis.
+              </Text>
+            )}
 
-          <View style={styles.modalSelect}>
-            <Text style={styles.label}>Calories</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder=">200kcal"
-              placeholderTextColor={'#888'}
-              keyboardType="decimal-pad"
-              value={String(calories ?? '')}
-              onChangeText={setCalories}
-            />
-          </View>
+            <View style={styles.modalSelect}>
+              <Text style={styles.label}>Grami</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="100 g"
+                placeholderTextColor={'#888'}
+                keyboardType="decimal-pad"
+                value={String(grams ?? '')}
+                onChangeText={setGrams}
+              />
+            </View>
 
-          <View style={styles.modalSelect}>
-            <Text style={styles.label}>Protein</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder=">10g proto"
-              placeholderTextColor={'#888'}
-              keyboardType="decimal-pad"
-              value={String(protein ?? '')}
-              onChangeText={setProtein}
-            />
-          </View>
+            <View style={styles.modalSelect}>
+              <Text style={styles.label}>Calories</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder=">200kcal"
+                placeholderTextColor={'#888'}
+                keyboardType="decimal-pad"
+                value={String(calories ?? '')}
+                onChangeText={setCalories}
+              />
+            </View>
+
+            <View style={styles.modalSelect}>
+              <Text style={styles.label}>Protein</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder=">10g proto"
+                placeholderTextColor={'#888'}
+                keyboardType="decimal-pad"
+                value={String(protein ?? '')}
+                onChangeText={setProtein}
+              />
+            </View>
+          </ScrollView>
+
           <View style={styles.modalButtons}>
             <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
               <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -82,12 +118,6 @@ const AddMealModal = ({
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -95,12 +125,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    flex: 1,
     backgroundColor: '#fff',
     padding: 20,
     borderRadius: 10,
     width: '84%',
     maxHeight: '80%',
+  },
+  body: {
+    flexGrow: 0,
   },
   modalTitle: {
     fontSize: 20,
@@ -109,6 +141,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   textInput: {
+    width: 110,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
@@ -117,22 +150,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     marginRight: 12,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
-    marginBottom: 15,
-    flex: 1,
-    height: 50,
-  },
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    position: 'absolute',
-    bottom: 30,
-    left: 20,
+    marginTop: 14,
   },
   cancelButton: {
     backgroundColor: '#ccc',
@@ -166,6 +187,11 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     marginRight: 10,
+  },
+  hint: {
+    fontSize: 12,
+    color: '#888',
+    marginBottom: 8,
   },
 });
 

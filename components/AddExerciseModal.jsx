@@ -122,7 +122,8 @@ const AddExerciseModal = ({
             </Text>
             {isNewName && (
               <Text style={styles.hint}>
-                Nova vježba: odaberi mišiće koje radi, spremit će se u tvoj popis.
+                Nova vježba: odaberi mišiće koje radi, spremit će se u tvoj
+                popis.
               </Text>
             )}
             <MuscleChips

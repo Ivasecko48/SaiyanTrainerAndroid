@@ -16,6 +16,12 @@ import TableHeader from '@/components/TableHeader';
 import { MEAL_COLUMNS } from '@/components/tableStyles';
 import AddMealModal from '@/components/AddMealModal';
 import saiyanService from '@/services/saiyanService';
+import {
+  loadFoodCatalog,
+  saveCustomFood,
+  findFood,
+  scaleFood,
+} from '@/services/foodCatalog';
 import { parseNumber } from '@/utils/parseNumber';
 
 const round1 = (n) => Math.round(n * 10) / 10;
@@ -31,6 +37,10 @@ const MealsScreen = () => {
   // Inputi rade sa stringovima, pretvaramo ih u brojeve tek pri spremanju
   const [protein, setProtein] = useState('');
   const [calories, setCalories] = useState('');
+  const [grams, setGrams] = useState('');
+  // Namirnica odabrana iz prijedloga, iz nje se računaju kalorije i proteini
+  const [selectedFood, setSelectedFood] = useState(null);
+  const [foodCatalog, setFoodCatalog] = useState([]);
   //for editing
   const [editingMeal, setEditingMeal] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -58,6 +68,12 @@ const MealsScreen = () => {
       fetchMeals();
     }
   }, [selectedDate, user]);
+
+  useEffect(() => {
+    if (user) {
+      loadFoodCatalog(user.$id).then(setFoodCatalog);
+    }
+  }, [user]);
 
   const fetchMeals = async () => {
     setLoading(true);
@@ -87,6 +103,37 @@ const MealsScreen = () => {
     setNewMealName('');
     setCalories('');
     setProtein('');
+    setGrams('');
+    setSelectedFood(null);
+  };
+
+  // Upisuje kalorije i proteine za odabranu namirnicu i količinu
+  const applyFood = (food, gramsText) => {
+    const amount = parseNumber(gramsText, NaN);
+    if (!food || !(amount > 0)) return;
+    const scaled = scaleFood(food, amount);
+    setCalories(String(scaled.calories));
+    setProtein(String(scaled.protein));
+  };
+
+  const handleSelectFood = (food) => {
+    setNewMealName(food.name);
+    setSelectedFood(food);
+    setGrams(String(food.grams));
+    applyFood(food, food.grams);
+  };
+
+  const handleGramsChange = (text) => {
+    setGrams(text);
+    applyFood(selectedFood, text);
+  };
+
+  // Ručno mijenjanje naziva odvaja obrok od odabrane namirnice
+  const handleNameChange = (text) => {
+    setNewMealName(text);
+    if (selectedFood && text !== selectedFood.name) {
+      setSelectedFood(null);
+    }
   };
 
   const openAddModal = () => {
@@ -116,11 +163,12 @@ const MealsScreen = () => {
     const dateToSave = selectedDate
       ? new Date(selectedDate) // koristi selectedDate iz kalendara
       : new Date(); // današnji datum ako ništa nije odabrano
+    const proteinValue = parseNumber(protein); // prazno polje = 0
     const newData = {
       user_id: user.$id,
       createdAt: dateToSave.toISOString(),
       mealName: newMealName.trim(),
-      protein: parseNumber(protein), // prazno polje = 0
+      protein: proteinValue,
       calories: caloriesValue,
     };
 
@@ -149,6 +197,19 @@ const MealsScreen = () => {
       setMeals((prev) => [...prev, response.data]);
     }
 
+    // Namirnicu koje nema u biblioteci pamtimo na uređaju za sljedeći put.
+    // Bez upisanih grama vrijednosti se tretiraju kao porcija od 100 g.
+    const known = findFood(foodCatalog, newData.mealName);
+    if (!known || known.custom) {
+      await saveCustomFood(user.$id, {
+        name: newData.mealName,
+        kcal: caloriesValue,
+        protein: proteinValue,
+        grams: parseNumber(grams, 100),
+      });
+      setFoodCatalog(await loadFoodCatalog(user.$id));
+    }
+
     closeModal();
   };
 
@@ -158,6 +219,8 @@ const MealsScreen = () => {
     setEditingMeal(meal); // Save reference
     setProtein(String(meal.protein ?? ''));
     setCalories(String(meal.calories ?? ''));
+    setGrams(''); // grami se ne spremaju u bazu
+    setSelectedFood(null);
     setModalVisible(true);
   };
 
@@ -227,8 +290,12 @@ const MealsScreen = () => {
       <AddMealModal
         modalVisible={modalVisible}
         onClose={closeModal}
+        catalog={foodCatalog}
         mealName={newMealName}
-        setMealName={setNewMealName}
+        setMealName={handleNameChange}
+        onSelectFood={handleSelectFood}
+        grams={grams}
+        setGrams={handleGramsChange}
         protein={protein}
         setProtein={setProtein}
         calories={calories}

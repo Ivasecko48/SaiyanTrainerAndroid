@@ -3,28 +3,45 @@ import { View, TextInput, Text, TouchableOpacity, StyleSheet } from 'react-nativ
 
 const MAX_SUGGESTIONS = 12;
 
+// Pretraga bez kvačica, da "riza" pronađe i "Riža"
+const normalize = (text) =>
+  String(text || '')
+    .toLowerCase()
+    .replace(/[čć]/g, 'c')
+    .replace(/š/g, 's')
+    .replace(/ž/g, 'z')
+    .replace(/đ/g, 'd');
+
 /**
- * Polje za naziv vježbe s prijedlozima iz kataloga (biblioteka + vlastite vježbe).
+ * Polje za naziv s prijedlozima iz kataloga (vježbe ili namirnice).
  * - onChange(text)      kad korisnik tipka
- * - onSelect(exercise)  kad dodirne prijedlog (roditelj tada popuni i mišiće)
+ * - onSelect(item)      kad dodirne prijedlog (roditelj tada popuni ostala polja)
+ * - groupKey            polje po kojem se prijedlozi grupiraju
  *
  * Prijedlozi su obični View-ovi (ne SectionList), jer se komponenta nalazi unutar
  * ScrollView-a u modalu, a ugniježđene liste izazivaju upozorenja.
  */
-const ExerciseAutocompleteInput = ({ value, onChange, onSelect, catalog = [] }) => {
+const ExerciseAutocompleteInput = ({
+  value,
+  onChange,
+  onSelect,
+  catalog = [],
+  placeholder = 'Unesi ili pronađi vježbu',
+  groupKey = 'muscle_group',
+}) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const sections = useMemo(() => {
-    const query = value.trim().toLowerCase();
+    const query = normalize(value.trim());
     if (!query) return [];
 
     const filtered = catalog
-      .filter((exercise) => exercise.name.toLowerCase().includes(query))
+      .filter((exercise) => normalize(exercise.name).includes(query))
       .slice(0, MAX_SUGGESTIONS);
 
     const groups = [];
     filtered.forEach((exercise) => {
-      const title = exercise.muscle_group || 'Ostalo';
+      const title = exercise[groupKey] || 'Ostalo';
       let group = groups.find((g) => g.title === title);
       if (!group) {
         group = { title, data: [] };
@@ -33,13 +50,13 @@ const ExerciseAutocompleteInput = ({ value, onChange, onSelect, catalog = [] }) 
       group.data.push(exercise);
     });
     return groups;
-  }, [value, catalog]);
+  }, [value, catalog, groupKey]);
 
   return (
     <View style={styles.container}>
       <TextInput
         style={styles.input}
-        placeholder="Unesi ili pronađi vježbu"
+        placeholder={placeholder}
         placeholderTextColor="#888"
         value={value}
         onChangeText={(text) => {

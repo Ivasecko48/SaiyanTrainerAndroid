@@ -17,7 +17,9 @@ import { useDate } from '@/contexts/DateContext';
 import saiyanService from '@/services/saiyanService';
 
 // zadana visina donje trake s tabovima (bez sigurnog razmaka na dnu ekrana)
-const TAB_BAR_HEIGHT = 49;
+const TAB_BAR_HEIGHT = 26;
+// razmak ikone kalendara od donje trake
+const CALENDAR_GAP = 16;
 
 const HeaderLogout = () => {
   const { user, logout } = useAuth();
@@ -50,9 +52,7 @@ export default function TabLayout() {
   const [exercises, setExercises] = useState([]);
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
-  // Ikona kalendara stoji na istoj visini kao gumb "+ Add" (60 px iznad donje trake s tabovima),
-  // a ne preko same trake, pa se tab "Muscle Groups" lako dodiruje
-  const calendarBottom = insets.bottom + TAB_BAR_HEIGHT + 60;
+  const calendarBottom = insets.bottom + TAB_BAR_HEIGHT + CALENDAR_GAP;
   // Tab s mišićima prikazuje cijeli tekući tjedan, pa kalendar tamo nema smisla
   const showCalendarButton = !pathname.includes('muscleScreen');
 
@@ -126,7 +126,6 @@ export default function TabLayout() {
 
           headerTintColor: '#fff',
           tabBarIcon: ({ color, size }) => {
-            // Tab s mišićima ima ikonu ruke koja radi biceps curl
             if (route.name === 'muscleScreen') {
               return (
                 <MaterialCommunityIcons
@@ -165,7 +164,10 @@ export default function TabLayout() {
         />
         <Tabs.Screen
           name="muscleScreen"
-          options={{ title: 'Muscle Groups', headerRight: () => <HeaderLogout /> }}
+          options={{
+            title: 'Muscle Groups',
+            headerRight: () => <HeaderLogout />,
+          }}
         />
       </Tabs>
 

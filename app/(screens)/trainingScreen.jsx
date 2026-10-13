@@ -145,7 +145,7 @@ const TrainingScreen = () => {
       weight: parseNumber(weight), // prihvaća i "82,5"
       sets: selectedSets || DEFAULT_SETS,
       reps: selectedReps || DEFAULT_REPS,
-      rpe: selectedRPE || 5.0,
+      rpe: selectedRPE || 7.0,
     };
 
     if (editingExercise) {
@@ -160,7 +160,7 @@ const TrainingScreen = () => {
       }
 
       setExercise((prev) =>
-        prev.map((e) => (e.$id === editingExercise.$id ? response.data : e))
+        prev.map((e) => (e.$id === editingExercise.$id ? response.data : e)),
       );
     } else {
       const response = await saiyanService.addExercise(newData);
@@ -192,7 +192,9 @@ const TrainingScreen = () => {
     // stari unosi nemaju mišiće: probaj ih pronaći po nazivu vježbe
     const own = normalizeMuscles(item.muscles);
     setSelectedMuscles(
-      own.length ? own : normalizeMuscles(findInCatalog(catalog, item.name)?.muscles)
+      own.length
+        ? own
+        : normalizeMuscles(findInCatalog(catalog, item.name)?.muscles),
     );
     setSelectedSets(item.sets);
     setSelectedReps(item.reps);
@@ -289,8 +291,8 @@ const styles = StyleSheet.create({
   },
   addButton: {
     position: 'absolute',
-    bottom: 60,
-    left: 25,
+    bottom: 20,
+    left: 20,
     right: 91, // ostavlja mjesta za ikonu kalendara s desne strane
     backgroundColor: '#fc7138',
     padding: 15,
