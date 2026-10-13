@@ -1,0 +1,76 @@
+SAIYAN TRAINER - NADOGRADNJA NA EXPO SDK 57 (grana: sdk-57)
+==========================================================
+
+Zašto: Expo Go s Google Playa podržava samo najnoviji SDK (57), a projekt je bio na SDK 53.
+
+1. Glavne verzije
+-----------------
+- Expo SDK 53 -> 57 (expo 57.0.28)
+- React Native 0.79.3 -> 0.86.3
+- React 19.0 -> 19.2.3
+- expo-router 5.1 -> 57.0 (navigacija je sada ugrađena u expo-router,
+  više ne koristi zasebne @react-navigation pakete)
+- Svi expo-* paketi na verzije za SDK 57 (npx expo install expo@^57.0.0 --fix)
+- react-native-reanimated 3.17 -> 4.5.1 (+ novi react-native-worklets 0.10.1)
+- react-native-gesture-handler 2.24 -> 2.32, react-native-screens 4.11 -> 4.26,
+  react-native-safe-area-context 5.4 -> 5.7, AsyncStorage 2.1.2 -> 2.2.0
+- @expo/vector-icons 14 -> 15 (sve ikone koje aplikacija koristi i dalje postoje)
+- react-native-calendars 1.1312.1 -> 1.1314.0 (stara verzija je vukla svoju
+  kopiju react-native-safe-area-context 4.5.0, što expo-doctor javlja kao duplikat)
+- Razvojni alati: @types/react 19.2, TypeScript 6.0, eslint-config-expo 57
+
+
+2. Uklonjeni paketi koje aplikacija nigdje ne koristi
+-----------------------------------------------------
+@react-navigation/bottom-tabs, drawer, elements, material-top-tabs, native,
+native-stack, react-native-paper, react-native-tab-view,
+react-native-picker-select, @react-native-picker/picker,
+react-native-vector-icons, react-native-webview.
+Razvojni: @react-native-community/cli ("latest"), metro-react-native-babel-preset.
+
+Razlog: ostaci predloška; od SDK 56 expo-router ne radi uz izravno instalirane
+@react-navigation pakete. Manje paketa znači manje sukoba i manji APK.
+
+
+3. Appwrite i expo-file-system
+------------------------------
+react-native-appwrite (i najnovija verzija) sa sobom traži expo-file-system 18
+(verzija iz SDK 53). U package.json je dodan "overrides" da Appwrite koristi
+expo-file-system iz SDK 57, pa postoji samo jedna verzija tog nativnog modula.
+Appwrite ga koristi samo za upload datoteka, koji aplikacija ne radi.
+
+Napomena: od SDK 56 Expo zamjenjuje globalni fetch svojim (expo/fetch).
+Ako prijava ili učitavanje podataka prestane raditi, u .env dodaj
+EXPO_PUBLIC_USE_RN_FETCH=1 (vraća stari fetch) i javi.
+
+
+4. app.json
+-----------
+Uklonjeni "newArchEnabled" i "android.edgeToEdgeEnabled": od SDK 55 nova
+arhitektura i edge-to-edge su uvijek uključeni, pa te opcije više ne postoje.
+
+
+5. Nativna android mapa
+-----------------------
+Ponovno generirana s "npx expo prebuild --platform android" za SDK 57.
+- Paket i dalje com.marinko369.SaiyanTrainer, ikone (Vegeta) se generiraju
+  iz app.json (vegeta_icon.png, adaptive-icon.png, pozadina #fc7138).
+- debug.keystore je isti kao prije (isti SHA-1), pa se novi APK instalira
+  preko postojećeg na mobitelu bez brisanja.
+- Za release build i dalje vrijedi: build iz kratke mape C:\st (Windows putanje).
+
+
+6. Pokretanje u Expo Go
+-----------------------
+npx expo start --go   (bez --go Expo traži dev client jer je expo-dev-client
+                       instaliran) pa skeniraj QR kod u Expo Go (SDK 57).
+
+expo-doctor: 20/21 provjera prolazi. Jedino upozorenje je da postoji android
+mapa uz nativne postavke u app.json, što je važno samo za EAS Build, koji ne koristimo.
+
+
+7. Ostale izmjene na ovoj grani
+-------------------------------
+- Gumb "+ Add Meal" na "Big man" sada je na istom mjestu kao "+ Add Exercise"
+  na "Strong Boy" (bottom 20, left 20 umjesto bottom 60, left 25).
+  Datoteka: app/(screens)/mealScreen.jsx

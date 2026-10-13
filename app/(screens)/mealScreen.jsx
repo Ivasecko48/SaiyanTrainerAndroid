@@ -391,8 +391,8 @@ const styles = StyleSheet.create({
   },
   addButton: {
     position: 'absolute',
-    bottom: 60,
-    left: 25,
+    bottom: 20, // isto kao "+ Add Exercise" na Strong Boy
+    left: 20,
     right: 91, // ostavlja mjesta za ikonu kalendara s desne strane
     backgroundColor: '#fc7138',
     padding: 15,

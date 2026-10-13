@@ -7,7 +7,6 @@
     "icon": "./assets/images/vegeta_icon.png",
     "scheme": "saiyantrainer",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
@@ -16,7 +15,6 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#fc7138"
       },
-      "edgeToEdgeEnabled": true,
       "package": "com.marinko369.SaiyanTrainer"
     },
     "web": {
