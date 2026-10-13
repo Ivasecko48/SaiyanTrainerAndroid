@@ -50,6 +50,8 @@ const MealsScreen = () => {
   // Inputi rade sa stringovima, pretvaramo ih u brojeve tek pri spremanju
   const [protein, setProtein] = useState('');
   const [calories, setCalories] = useState('');
+  const [fat, setFat] = useState('');
+  const [carbs, setCarbs] = useState('');
   const [grams, setGrams] = useState('');
   // Namirnica odabrana iz prijedloga, iz nje se računaju kalorije i proteini
   const [selectedFood, setSelectedFood] = useState(null);
@@ -140,6 +142,8 @@ const MealsScreen = () => {
     setNewMealName('');
     setCalories('');
     setProtein('');
+    setFat('');
+    setCarbs('');
     setGrams('');
     setSelectedFood(null);
   };
@@ -151,6 +155,8 @@ const MealsScreen = () => {
     const scaled = scaleFood(food, amount);
     setCalories(String(scaled.calories));
     setProtein(String(scaled.protein));
+    setFat(scaled.fat === null ? '' : String(scaled.fat));
+    setCarbs(scaled.carbs === null ? '' : String(scaled.carbs));
   };
 
   const handleSelectFood = (food) => {
@@ -201,11 +207,20 @@ const MealsScreen = () => {
     // odabrani dan iz kalendara (kod tjedna i svih dana obično današnji)
     const dateToSave = new Date(entryDate);
     const proteinValue = Math.round(parseNumber(protein)); // prazno polje = 0
+    // Masti i UH: prazno polje = nepoznato (null), ne 0
+    const optionalGrams = (text) => {
+      const value = parseNumber(text, NaN);
+      return Number.isNaN(value) ? null : Math.round(value);
+    };
+    const fatValue = optionalGrams(fat);
+    const carbsValue = optionalGrams(carbs);
     const newData = {
       user_id: user.$id,
       createdAt: dateToSave.toISOString(),
       mealName: newMealName.trim(),
       protein: proteinValue,
+      fat: fatValue,
+      carbs: carbsValue,
       calories: caloriesValue,
     };
 
@@ -242,6 +257,8 @@ const MealsScreen = () => {
         name: newData.mealName,
         kcal: caloriesValue,
         protein: proteinValue,
+        fat: fatValue,
+        carbs: carbsValue,
         grams: parseNumber(grams, 100),
       });
       setFoodCatalog(await loadFoodCatalog(user.$id));
@@ -256,6 +273,8 @@ const MealsScreen = () => {
     setEditingMeal(meal); // Save reference
     setProtein(String(meal.protein ?? ''));
     setCalories(String(meal.calories ?? ''));
+    setFat(String(meal.fat ?? ''));
+    setCarbs(String(meal.carbs ?? ''));
     setGrams(''); // grami se ne spremaju u bazu
     setSelectedFood(null);
     setModalVisible(true);
@@ -371,6 +390,10 @@ const MealsScreen = () => {
         setGrams={handleGramsChange}
         protein={protein}
         setProtein={setProtein}
+        fat={fat}
+        setFat={setFat}
+        carbs={carbs}
+        setCarbs={setCarbs}
         calories={calories}
         setCalories={setCalories}
         editingMeal={editingMeal}

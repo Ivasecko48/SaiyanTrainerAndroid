@@ -23,6 +23,10 @@ const AddMealModal = ({
   setCalories,
   protein,
   setProtein,
+  fat,
+  setFat,
+  carbs,
+  setCarbs,
   editingMeal,
   handleSave,
 }) => {
@@ -98,6 +102,30 @@ const AddMealModal = ({
                 keyboardType="decimal-pad"
                 value={String(protein ?? '')}
                 onChangeText={setProtein}
+              />
+            </View>
+
+            <View style={styles.modalSelect}>
+              <Text style={styles.label}>Masti</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="g masti"
+                placeholderTextColor={'#888'}
+                keyboardType="decimal-pad"
+                value={String(fat ?? '')}
+                onChangeText={setFat}
+              />
+            </View>
+
+            <View style={styles.modalSelect}>
+              <Text style={styles.label}>Ugljikohidrati</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="g UH"
+                placeholderTextColor={'#888'}
+                keyboardType="decimal-pad"
+                value={String(carbs ?? '')}
+                onChangeText={setCarbs}
               />
             </View>
           </ScrollView>

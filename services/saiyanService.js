@@ -9,6 +9,24 @@ const mealsColId = process.env.EXPO_PUBLIC_APPWRITE_COL_MEALS_ID;
 
 const PAGE_SIZE = 100;
 
+// Masti i UH šalju se samo ako su upisani (stari obroci ih nemaju)
+const macros = ({ fat, carbs }) => ({
+  ...(fat !== null && fat !== undefined ? { fat } : {}),
+  ...(carbs !== null && carbs !== undefined ? { carbs } : {}),
+});
+
+// Dok u Appwrite kolekciju obroka nisu dodani atributi "fat" i "carbs",
+// Appwrite odbija nepoznata polja. Tada se obrok spremi bez njih.
+const withoutMacrosIfUnknown = async (save, data) => {
+  const response = await save(data);
+  if (response?.error && /unknown attribute/i.test(response.error)) {
+    console.warn('Kolekciji obroka nedostaju atributi fat/carbs, spremam bez njih');
+    const { fat, carbs, ...rest } = data;
+    return save(rest);
+  }
+  return response;
+};
+
 // Appwrite po defaultu vraća samo 25 dokumenata po upitu.
 // Zato dohvaćamo stranicu po stranicu dok ne stignemo do kraja.
 const listAllForUser = async (colId, userId) => {
@@ -100,7 +118,7 @@ const saiyanService = {
   //add new meal
   // Polje u Appwrite kolekciji se zove `mealName`.
   // createdAt dolazi s ekrana, pa obrok završi na odabranom danu u kalendaru.
-  async addMeal({ user_id, createdAt, mealName, calories, protein }) {
+  async addMeal({ user_id, createdAt, mealName, calories, protein, fat, carbs }) {
     if (!mealName) {
       return { error: 'Meal name cant be empty' };
     }
@@ -112,15 +130,14 @@ const saiyanService = {
       mealName,
       calories,
       protein,
+      ...macros({ fat, carbs }),
       createdAt: createdAt || new Date().toISOString(),
       user_id: user_id,
     };
 
-    const response = await databaseService.createDocument(
-      dbId,
-      mealsColId,
-      data,
-      ID.unique()
+    const response = await withoutMacrosIfUnknown(
+      (doc) => databaseService.createDocument(dbId, mealsColId, doc, ID.unique()),
+      data
     );
 
     if (response?.error) {
@@ -154,16 +171,10 @@ const saiyanService = {
   },
 
   // Update meal
-  async updateMeal({ id, mealName, calories, protein }) {
-    const response = await databaseService.updateDocument(
-      dbId,
-      mealsColId,
-      id,
-      {
-        mealName,
-        calories,
-        protein,
-      }
+  async updateMeal({ id, mealName, calories, protein, fat, carbs }) {
+    const response = await withoutMacrosIfUnknown(
+      (doc) => databaseService.updateDocument(dbId, mealsColId, id, doc),
+      { mealName, calories, protein, ...macros({ fat, carbs }) }
     );
 
     if (response?.error) {

@@ -9,10 +9,13 @@ export const EXERCISE_COLUMNS = [
   { label: 'RPE', flex: 1 },
 ];
 
+// Kalorije pa makronutrijenti zajedno; proteini, masti i UH su u gramima
 export const MEAL_COLUMNS = [
-  { label: 'Meal', flex: 2.4 },
-  { label: 'Protein', flex: 1.2 },
-  { label: 'Calories', flex: 1.2 },
+  { label: 'Meal', flex: 2.2 },
+  { label: 'Kcal', flex: 1.1 },
+  { label: 'Prot', flex: 1 },
+  { label: 'Masti', flex: 1.1 },
+  { label: 'UH', flex: 1 },
 ];
 
 // prostor za ikone olovke i smeća na kraju reda
@@ -64,6 +67,10 @@ export const tableStyles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 15,
     color: '#333',
+  },
+  // manji brojevi za tablicu obroka, koja ima više stupaca
+  cellSmall: {
+    fontSize: 14,
   },
   actions: {
     width: ACTIONS_WIDTH,

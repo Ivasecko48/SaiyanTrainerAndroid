@@ -1,0 +1,44 @@
+SAIYAN TRAINER - MASTI I UGLJIKOHIDRATI U OBROCIMA (grana: makronutrijenti)
+=========================================================================
+
+1. Što radi
+-----------
+- Tablica obroka na "Big man" ima stupce: Meal | Kcal | Prot | Masti | UH
+  (proteini, masti i ugljikohidrati u gramima). Stari obroci, koji te podatke
+  nemaju, pokazuju "–".
+- Gornji sažetak se NE mijenja: i dalje su u fokusu kalorije i proteini
+  (ukupno, cilj, zeleno/crveno).
+- Prozor "Add Meal" ima nova polja Masti i Ugljikohidrati. Kad odabereš
+  namirnicu iz popisa i upišeš grame, izračunaju se kao i kalorije/proteini;
+  mogu se i ručno ispraviti. Prazno polje znači "nepoznato" (ne 0).
+- Vlastite namirnice ("Moje namirnice") pamte i masti i UH.
+
+
+2. Popis namirnica (components/foods.json)
+------------------------------------------
+Svih 209 namirnica ima masti i ugljikohidrate na 100 g, prema standardnim
+nutritivnim tablicama (USDA i slične). Provjereno je da se zbroj
+4·proteini + 4·UH + 9·masti slaže s kalorijama; manja odstupanja postoje samo
+kod voća i povrća jer tablice u UH ubrajaju i vlakna. Vrijednosti su prosječne
+i zaokružene; gotova jela (burek, sarma, ćevapi...) jako ovise o receptu.
+
+
+3. Appwrite: dva nova atributa u kolekciji obroka (jednom)
+----------------------------------------------------------
+Databases -> tvoja baza -> kolekcija obroka (meals) -> Attributes / Columns
+-> Create -> Integer:
+  - fat    (Integer, nije obavezno, min 0)
+  - carbs  (Integer, nije obavezno, min 0)
+
+Dok atributi ne postoje, aplikacija obroke sprema kao i prije, samo bez
+masti i UH (Appwrite odbija nepoznata polja, pa se obrok tada spremi bez njih).
+
+
+4. Datoteke
+-----------
+- components/foods.json - masti i UH za svih 209 namirnica
+- services/foodCatalog.js - masti i UH u preračunu po gramima i u vlastitim namirnicama
+- services/saiyanService.js - spremanje masti i UH (uz zaštitu dok atributi ne postoje)
+- components/AddMealModal.jsx - polja Masti i Ugljikohidrati
+- app/(screens)/mealScreen.jsx - izračun, spremanje i uređivanje
+- components/MealRender.jsx, components/tableStyles.js - novi stupci tablice

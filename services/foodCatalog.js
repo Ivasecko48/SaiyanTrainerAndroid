@@ -8,12 +8,20 @@ export const MY_FOODS = 'Moje namirnice';
 
 const lower = (text) => String(text || '').trim().toLowerCase();
 
+// Broj ili null kad podatak ne postoji (starije vlastite namirnice nemaju masti i UH)
+const optional = (value) =>
+  value === null || value === undefined || value === '' || Number.isNaN(Number(value))
+    ? null
+    : Number(value);
+
 // Vrijednosti u biblioteci su na 100 g
 const libraryItems = defaultFoods.map((food) => ({
   name: food.name,
   category: food.category || 'Ostalo',
   kcal: food.kcal,
   protein: food.protein,
+  fat: food.fat,
+  carbs: food.carbs,
   grams: 100,
   custom: false,
 }));
@@ -43,6 +51,8 @@ export const loadFoodCatalog = async (userId) => {
       category: MY_FOODS,
       kcal: Number(food.kcal) || 0,
       protein: Number(food.protein) || 0,
+      fat: optional(food.fat),
+      carbs: optional(food.carbs),
       grams: Number(food.grams) > 0 ? Number(food.grams) : 100,
       custom: true,
     })),
@@ -50,8 +60,8 @@ export const loadFoodCatalog = async (userId) => {
 };
 
 // Sprema novu vlastitu namirnicu ili ažurira postojeću.
-// `grams` je količina na koju se odnose kcal i protein.
-export const saveCustomFood = async (userId, { name, kcal, protein, grams }) => {
+// `grams` je količina na koju se odnose kcal, protein, masti i UH.
+export const saveCustomFood = async (userId, { name, kcal, protein, fat, carbs, grams }) => {
   const cleanName = String(name || '').trim();
   if (!userId || !cleanName) return;
   if (libraryNames.has(lower(cleanName))) return; // biblioteka se ne mijenja
@@ -62,6 +72,8 @@ export const saveCustomFood = async (userId, { name, kcal, protein, grams }) => 
     name: cleanName,
     kcal: Number(kcal) || 0,
     protein: Number(protein) || 0,
+    fat: optional(fat),
+    carbs: optional(carbs),
     grams: Number(grams) > 0 ? Number(grams) : 100,
   };
 
@@ -81,11 +93,15 @@ export const findFood = (catalog, name) => {
   return (catalog || []).find((food) => lower(food.name) === wanted) || null;
 };
 
-// Kalorije i proteini za zadanu količinu u gramima, zaokruženo na cijele brojeve
+// Kalorije, proteini, masti i UH za zadanu količinu u gramima, zaokruženo na cijele
+// brojeve. Masti i UH su null ako ih namirnica nema.
 export const scaleFood = (food, grams) => {
   const factor = grams / food.grams;
+  const scale = (value) => (value === null || value === undefined ? null : Math.round(value * factor));
   return {
     calories: Math.round(food.kcal * factor),
     protein: Math.round(food.protein * factor),
+    fat: scale(food.fat),
+    carbs: scale(food.carbs),
   };
 };
