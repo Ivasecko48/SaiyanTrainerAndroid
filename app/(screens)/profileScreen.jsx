@@ -17,6 +17,7 @@ import KettlebellSlider from '@/components/KettlebellSlider';
 import NumberChips from '@/components/NumberChips';
 import AvatarPickerModal from '@/components/AvatarPickerModal';
 import { avatarImage, DEFAULT_AVATAR } from '@/components/avatars';
+import { USERNAME_HINT } from '@/services/usernameService';
 import {
   AGE_RANGES,
   ACTIVITY_LEVELS,
@@ -61,7 +62,7 @@ const ResultRow = ({ label, value, strong }) => (
 
 const ProfileScreen = () => {
   const router = useRouter();
-  const { user, loading: authLoading, updateProfile, updateAvatar } = useAuth();
+  const { user, loading: authLoading, updateProfile, updateAvatar, setUsername } = useAuth();
 
   const saved = user?.prefs?.profile;
   const [profile, setProfile] = useState(() => withDefaults(saved));
@@ -70,6 +71,9 @@ const ProfileScreen = () => {
   const [pickerVisible, setPickerVisible] = useState(false);
   const [savingAvatar, setSavingAvatar] = useState(false);
   const avatar = user?.prefs?.avatar || DEFAULT_AVATAR;
+  // Username za račune napravljene prije uvođenja usernamea
+  const [newUsername, setNewUsername] = useState('');
+  const [savingUsername, setSavingUsername] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -131,7 +135,18 @@ const ProfileScreen = () => {
     setPickerVisible(false);
   };
 
-  const username = user?.name || user?.email || '';
+  // Username se postavlja jednom i nakon toga se ne može mijenjati
+  const handleSaveUsername = async () => {
+    setSavingUsername(true);
+    const response = await setUsername(newUsername);
+    setSavingUsername(false);
+
+    if (response?.error) {
+      Alert.alert('Saiyan name', response.error);
+      return;
+    }
+    setNewUsername('');
+  };
 
   return (
     <ScrollView
@@ -153,7 +168,38 @@ const ProfileScreen = () => {
         </TouchableOpacity>
         <View style={styles.userInfo}>
           <Text style={styles.smallLabel}>Saiyan name</Text>
-          <TextInput style={styles.readOnly} value={username} editable={false} />
+          {user?.name ? (
+            <TextInput style={styles.readOnly} value={user.name} editable={false} />
+          ) : (
+            <>
+              <View style={styles.usernameRow}>
+                <TextInput
+                  style={[styles.usernameInput, styles.flexInput]}
+                  placeholder="Odaberi username"
+                  placeholderTextColor="#aaa"
+                  value={newUsername}
+                  onChangeText={(text) => setNewUsername(text.toLowerCase())}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  maxLength={20}
+                />
+                <TouchableOpacity
+                  style={styles.usernameButton}
+                  onPress={handleSaveUsername}
+                  disabled={savingUsername || !newUsername.trim()}
+                >
+                  {savingUsername ? (
+                    <ActivityIndicator color="#fff" size="small" />
+                  ) : (
+                    <Feather name="check" size={18} color="#fff" />
+                  )}
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.usernameHint}>
+                {USERNAME_HINT}. Za prijavu umjesto e-maila ({user?.email}).
+              </Text>
+            </>
+          )}
         </View>
       </View>
 
@@ -361,6 +407,35 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     opacity: 0.5,
+  },
+  usernameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  usernameInput: {
+    borderWidth: 1,
+    borderColor: ORANGE,
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 16,
+    color: '#333',
+  },
+  flexInput: {
+    flex: 1,
+  },
+  usernameButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 8,
+    backgroundColor: ORANGE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  usernameHint: {
+    fontSize: 11,
+    color: '#888',
+    marginTop: 4,
   },
   section: {
     fontSize: 17,

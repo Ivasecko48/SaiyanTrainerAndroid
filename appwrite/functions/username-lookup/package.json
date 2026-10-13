@@ -1,0 +1,10 @@
+{
+  "name": "username-lookup",
+  "version": "1.0.0",
+  "description": "SaiyanTrainer: provjera i dohvat e-maila po korisničkom imenu za prijavu",
+  "type": "module",
+  "main": "src/main.js",
+  "dependencies": {
+    "node-appwrite": "^29.3.1"
+  }
+}

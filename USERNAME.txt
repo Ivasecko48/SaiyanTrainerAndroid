@@ -1,0 +1,57 @@
+SAIYAN TRAINER - PRIJAVA KORISNIČKIM IMENOM (grana: username)
+=============================================================
+
+1. Što radi
+-----------
+- Registracija traži i username (Saiyan name): 3-20 znakova, mala slova,
+  brojke, _ i . Aplikacija prije registracije provjeri je li slobodan.
+- Username se sprema kao ime (name) Appwrite korisnika.
+- Prijava prima e-mail ILI username. Ako upisani tekst nema "@", aplikacija
+  pozove Appwrite Function koja na serveru pronađe e-mail tog korisnika, pa se
+  prijava nastavlja normalno e-mailom i lozinkom.
+- Računi napravljeni prije ove promjene (bez usernamea) na Profilu umjesto
+  zaključanog "Saiyan name" vide polje za unos i mogu username postaviti JEDNOM.
+  Nakon toga je zaključan kao i prije.
+- Gumb za prijavu/registraciju pokazuje vrtuljak dok traje zahtjev
+  (sprječava dvostruki klik).
+
+Zašto funkcija: Appwrite prijavu podržava samo e-mailom, a popis korisnika
+smije čitati samo server. Funkcija vraća e-mail samo za točno upisano ime,
+pa popis korisnika i e-mailova nije javno čitljiv.
+
+
+2. Datoteke
+-----------
+Aplikacija:
+- services/usernameService.js (novo) - poziv funkcije, pravila za username
+- services/appwrite.js - Functions + EXPO_PUBLIC_APPWRITE_FN_USERNAME_ID
+- services/authService.js - register s imenom, updateName
+- contexts/AuthContext.js - login e-mailom ili usernameom, register s
+  provjerom usernamea, setUsername za postojeće račune
+- app/auth/index.jsx - polje Username kod registracije, "Email ili username"
+  kod prijave, vrtuljak na gumbu
+- app/(screens)/profileScreen.jsx - postavljanje usernamea za stare račune
+
+Appwrite Function:
+- appwrite/functions/username-lookup/ (package.json, src/main.js)
+  Akcije: "check" (je li username slobodan) i "lookup" (e-mail za username).
+
+
+3. Postavljanje u Appwrite konzoli (jednom)
+-------------------------------------------
+1. Functions -> Create function -> Manual (upload) ili "Create from scratch".
+   - Name: username-lookup
+   - Runtime: Node.js (najnoviji ponuđeni, npr. 22)
+   - Kod: uploadaj username-lookup.tar.gz (napravljen iz mape
+     appwrite/functions/username-lookup)
+   - Entrypoint: src/main.js
+   - Build commands: npm install
+2. U postavkama funkcije (Settings):
+   - Execute access: Any   (poziva se prije prijave)
+   - Scopes: users.read    (dinamički API ključ za čitanje korisnika)
+3. Kopiraj Function ID i dodaj ga u .env projekta:
+     EXPO_PUBLIC_APPWRITE_FN_USERNAME_ID=<function id>
+   pa ponovno pokreni "npx expo start --go".
+
+Bez tog ID-a aplikacija i dalje radi s e-mailom, a kod usernamea javi
+"Prijava korisničkim imenom još nije postavljena."

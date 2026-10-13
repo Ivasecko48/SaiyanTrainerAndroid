@@ -1,5 +1,10 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import authService from '../services/authService';
+import usernameService, {
+  USERNAME_RULE,
+  USERNAME_HINT,
+  normalizeUsername,
+} from '../services/usernameService';
 
 const AuthContext = createContext();
 
@@ -24,7 +29,23 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   };
 
-  const login = async (email, password) => {
+  // Prijava e-mailom ili korisničkim imenom. Za username se e-mail dohvaća
+  // preko Appwrite Functiona, jer Appwrite prijavu podržava samo e-mailom.
+  const login = async (identifier, password) => {
+    let email = String(identifier || '').trim();
+
+    if (!email.includes('@')) {
+      const username = normalizeUsername(email);
+      if (!USERNAME_RULE.test(username)) {
+        return { error: 'Upiši e-mail ili ispravan username' };
+      }
+      const lookup = await usernameService.emailFor(username);
+      if (lookup.error) {
+        return lookup;
+      }
+      email = lookup.email;
+    }
+
     const response = await authService.login(email, password);
 
     if (response?.error) {
@@ -35,13 +56,51 @@ export const AuthProvider = ({ children }) => {
     return { success: true };
   };
 
-  const register = async (email, password) => {
-    const response = await authService.register(email, password);
+  // Provjera usernamea prije registracije ili naknadnog postavljanja
+  const checkUsername = async (username) => {
+    if (!USERNAME_RULE.test(username)) {
+      return { error: `Username: ${USERNAME_HINT}` };
+    }
+    const check = await usernameService.isAvailable(username);
+    if (check.error) {
+      return check;
+    }
+    if (!check.available) {
+      return { error: 'Taj username je već zauzet' };
+    }
+    return { success: true };
+  };
+
+  const register = async (email, password, usernameInput) => {
+    const username = normalizeUsername(usernameInput);
+    const check = await checkUsername(username);
+    if (check.error) {
+      return check;
+    }
+
+    const response = await authService.register(email, password, username);
 
     if (response?.error) {
       return response;
     }
     return login(email, password); // Auto-login
+  };
+
+  // Računi napravljeni prije uvođenja usernamea mogu ga postaviti jednom (na Profilu)
+  const setUsername = async (usernameInput) => {
+    const username = normalizeUsername(usernameInput);
+    const check = await checkUsername(username);
+    if (check.error) {
+      return check;
+    }
+
+    const response = await authService.updateName(username);
+    if (response?.error) {
+      return response;
+    }
+
+    setUser(response);
+    return { success: true };
   };
 
   const logout = async () => {
@@ -75,6 +134,7 @@ export const AuthProvider = ({ children }) => {
         user,
         login,
         register,
+        setUsername,
         logout,
         updateProfile,
         updateAvatar,

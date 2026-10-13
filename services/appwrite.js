@@ -1,4 +1,4 @@
-import { Account, Client, Databases } from 'react-native-appwrite';
+import { Account, Client, Databases, Functions } from 'react-native-appwrite';
 import { Platform } from 'react-native';
 
 const config = {
@@ -8,6 +8,10 @@ const config = {
   col: {
     exercises: process.env.EXPO_PUBLIC_APPWRITE_COL_EXERCISES_ID,
     meals: process.env.EXPO_PUBLIC_APPWRITE_COL_MEALS_ID,
+  },
+  fn: {
+    // Appwrite Function za prijavu korisničkim imenom (appwrite/functions/username-lookup)
+    username: process.env.EXPO_PUBLIC_APPWRITE_FN_USERNAME_ID,
   },
 };
 
@@ -28,4 +32,6 @@ const database = new Databases(client);
 
 const account = new Account(client);
 
-export { account, client, config, database };
+const functions = new Functions(client);
+
+export { account, client, config, database, functions };
