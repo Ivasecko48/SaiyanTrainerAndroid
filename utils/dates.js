@@ -26,3 +26,52 @@ export const weekRange = (ref = new Date()) => {
 
 // 'dd.MM.' za prikaz u naslovu
 export const formatShort = (date) => `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.`;
+
+// 'YYYY-MM-DD' u lokalni datum
+export const fromKey = (key) => {
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(y, m - 1, d);
+};
+
+const DAYS = ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota'];
+const DAYS_SHORT = ['Ned', 'Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub'];
+
+// 'Srijeda, 15.10.'
+export const formatDayLong = (key) => {
+  const date = fromKey(key);
+  return `${DAYS[date.getDay()]}, ${formatShort(date)}`;
+};
+
+// 'Sri, 15.10.'
+export const formatDayShort = (key) => {
+  const date = fromKey(key);
+  return `${DAYS_SHORT[date.getDay()]}, ${formatShort(date)}`;
+};
+
+// Je li unos u rasponu { start, end } ('YYYY-MM-DD'); null = svi dani
+export const inRange = (iso, range) => {
+  if (!range) return true;
+  const key = dateKey(iso);
+  return key >= range.start && key <= range.end;
+};
+
+// Unosi poredani po danu, s naslovom dana ispred svakog dana (prikaz tjedna ili svih dana).
+// Retci naslova imaju type: 'day'.
+export const withDayHeaders = (items, newestFirst = false) => {
+  const sorted = [...items].sort((a, b) => {
+    const diff = dateKey(a.createdAt).localeCompare(dateKey(b.createdAt));
+    return newestFirst ? -diff : diff;
+  });
+
+  const rows = [];
+  let current = null;
+  sorted.forEach((item) => {
+    const key = dateKey(item.createdAt);
+    if (key !== current) {
+      current = key;
+      rows.push({ type: 'day', $id: `day-${key}`, label: formatDayShort(key) });
+    }
+    rows.push(item);
+  });
+  return rows;
+};

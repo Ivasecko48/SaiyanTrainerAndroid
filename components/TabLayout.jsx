@@ -60,7 +60,8 @@ const HeaderActions = () => {
 
 export default function TabLayout() {
   const [calendarVisible, setCalendarVisible] = useState(false);
-  const { selectedDate, setSelectedDate, refreshKey } = useDate();
+  const { selectedDate, mode, range, showDay, showWeek, showAll, resetToToday, refreshKey } =
+    useDate();
   const { user } = useAuth();
   const [exercises, setExercises] = useState([]);
   const pathname = usePathname();
@@ -91,18 +92,35 @@ export default function TabLayout() {
     fetchData();
   }, [user?.$id, refreshKey]);
 
+  // Promjena taba uvijek vraća prikaz na današnji dan
+  useEffect(() => {
+    resetToToday();
+  }, [pathname]);
+
   const handleDayPress = (day) => {
-    setSelectedDate(day.dateString);
+    showDay(day.dateString);
+    setCalendarVisible(false);
+  };
+
+  // Dugi pritisak na dan prikazuje cijeli njegov tjedan
+  const handleDayLongPress = (day) => {
+    showWeek(day.dateString);
+    setCalendarVisible(false);
+  };
+
+  // Cijeli tjedan dana koji je označen u kalendaru
+  const handleShowWeek = () => {
+    showWeek();
     setCalendarVisible(false);
   };
 
   // Makni filter datuma i prikaži sve dane
   const handleShowAll = () => {
-    setSelectedDate(null);
+    showAll();
     setCalendarVisible(false);
   };
 
-  const getMarkedDates = (exercises, selectedDate) => {
+  const getMarkedDates = () => {
     const marked = {};
 
     exercises.forEach((ex) => {
@@ -117,8 +135,15 @@ export default function TabLayout() {
       }
     });
 
-    // Dodaj odabrani datum kao posebno označen
-    if (selectedDate) {
+    // Prikazani dan ili svi dani prikazanog tjedna
+    if (mode === 'week') {
+      const day = new Date(`${range.start}T00:00:00Z`);
+      for (let i = 0; i < 7; i++) {
+        const key = day.toISOString().split('T')[0];
+        marked[key] = { ...(marked[key] || {}), selected: true, selectedColor: '#fdb48f' };
+        day.setUTCDate(day.getUTCDate() + 1);
+      }
+    } else if (mode === 'day') {
       marked[selectedDate] = {
         ...(marked[selectedDate] || {}),
         selected: true,
@@ -215,16 +240,27 @@ export default function TabLayout() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Calendar
-              current={selectedDate || undefined}
+              current={selectedDate}
+              firstDay={1}
               onDayPress={handleDayPress}
-              markedDates={getMarkedDates(exercises, selectedDate)}
+              onDayLongPress={handleDayLongPress}
+              markedDates={getMarkedDates()}
             />
+            <Text style={styles.calendarHint}>
+              Dugi pritisak na dan prikazuje cijeli njegov tjedan
+            </Text>
             <View style={styles.calendarActions}>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={handleShowWeek}
+              >
+                <Text style={styles.actionText}>Cijeli tjedan</Text>
+              </TouchableOpacity>
               <TouchableOpacity
                 style={styles.actionButton}
                 onPress={handleShowAll}
               >
-                <Text style={styles.actionText}>Prikaži sve dane</Text>
+                <Text style={styles.actionText}>Svi dani</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.actionButton}
@@ -276,6 +312,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: 'white',
     overflow: 'hidden',
+  },
+  calendarHint: {
+    fontSize: 12,
+    color: '#999',
+    textAlign: 'center',
+    paddingTop: 4,
+    paddingBottom: 8,
   },
   calendarActions: {
     flexDirection: 'row',

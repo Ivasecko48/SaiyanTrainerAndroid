@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useDate } from '@/contexts/DateContext';
 import MealRender from '@/components/MealRender';
 import TableHeader from '@/components/TableHeader';
+import DayHeader, { RangeLabel } from '@/components/DayHeader';
 import { MEAL_COLUMNS } from '@/components/tableStyles';
 import AddMealModal from '@/components/AddMealModal';
 import saiyanService from '@/services/saiyanService';
@@ -23,7 +24,7 @@ import {
   scaleFood,
 } from '@/services/foodCatalog';
 import { parseNumber } from '@/utils/parseNumber';
-import { dateKey } from '@/utils/dates';
+import { dateKey, todayKey, inRange, withDayHeaders } from '@/utils/dates';
 import { calcTargets, calorieStatus, proteinStatus } from '@/utils/nutrition';
 
 const round1 = (n) => Math.round(n * 10) / 10;
@@ -40,8 +41,9 @@ const sumMeals = (list) =>
 const MealsScreen = () => {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const { selectedDate } = useDate();
+  const { selectedDate, range, mode, rangeLabel, entryDate } = useDate();
 
+  // Svi obroci korisnika; prikazuju se samo oni u odabranom rasponu
   const [meals, setMeals] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [newMealName, setNewMealName] = useState('');
@@ -57,20 +59,26 @@ const MealsScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Ukupne vrijednosti se računaju iz liste, pa se osvježe nakon svake promjene
+  // Obroci u odabranom rasponu i retci tablice (kod više dana s naslovom dana)
+  const { visible, rows } = useMemo(() => {
+    const list = meals.filter((meal) => inRange(meal.createdAt, range));
+    return {
+      visible: list,
+      rows: mode === 'day' ? list : withDayHeaders(list, mode === 'all'),
+    };
+  }, [meals, range, mode]);
+
+  // Ukupne vrijednosti se računaju iz liste, pa se osvježe nakon svake promjene.
+  // Dnevni cilj se uspoređuje s prikazanim danom, a kod tjedna i svih dana s današnjim.
+  const goalDay = mode === 'day' ? selectedDate : todayKey();
   const { totalCalories, totalProtein, day } = useMemo(() => {
-    const all = sumMeals(meals);
-    // Dnevni cilj se uspoređuje s odabranim danom, a kad su prikazani svi dani, s današnjim
-    const today = dateKey(new Date().toISOString());
-    const dayTotals = selectedDate
-      ? all
-      : sumMeals(meals.filter((meal) => dateKey(meal.createdAt) === today));
+    const all = sumMeals(visible);
     return {
       totalCalories: round1(all.calories),
       totalProtein: round1(all.protein),
-      day: dayTotals,
+      day: sumMeals(meals.filter((meal) => dateKey(meal.createdAt) === goalDay)),
     };
-  }, [meals, selectedDate]);
+  }, [visible, meals, goalDay]);
 
   // Dnevni cilj iz profila (null dok profil nije postavljen)
   const targets = useMemo(
@@ -79,7 +87,7 @@ const MealsScreen = () => {
   );
   const kcalStatus = targets && calorieStatus(day.calories, targets);
   const protStatus = targets && proteinStatus(day.protein, targets);
-  const goalPrefix = selectedDate ? 'Cilj' : 'Danas, cilj';
+  const goalPrefix = goalDay === todayKey() ? 'Danas, cilj' : 'Cilj';
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -91,7 +99,7 @@ const MealsScreen = () => {
     if (user) {
       fetchMeals();
     }
-  }, [selectedDate, user]);
+  }, [range?.start, range?.end, user]);
 
   useEffect(() => {
     if (user) {
@@ -107,14 +115,7 @@ const MealsScreen = () => {
       setError(response.error);
       Alert.alert('Error', response.error);
     } else {
-      let list = response.data;
-      if (selectedDate) {
-        list = list.filter((meal) => {
-          const mealDate = new Date(meal.createdAt).toISOString().split('T')[0];
-          return mealDate === selectedDate;
-        });
-      }
-      setMeals(list);
+      setMeals(response.data);
       setError(null);
     }
 
@@ -185,9 +186,8 @@ const MealsScreen = () => {
       return;
     }
 
-    const dateToSave = selectedDate
-      ? new Date(selectedDate) // koristi selectedDate iz kalendara
-      : new Date(); // današnji datum ako ništa nije odabrano
+    // odabrani dan iz kalendara (kod tjedna i svih dana obično današnji)
+    const dateToSave = new Date(entryDate);
     const proteinValue = Math.round(parseNumber(protein)); // prazno polje = 0
     const newData = {
       user_id: user.$id,
@@ -275,6 +275,7 @@ const MealsScreen = () => {
 
   return (
     <View style={styles.container}>
+      <RangeLabel label={rangeLabel} />
       <View style={styles.summary}>
         <View style={styles.summaryItem}>
           <Text style={styles.summaryValue}>{totalCalories}</Text>
@@ -324,15 +325,19 @@ const MealsScreen = () => {
         <>
           {error && <Text style={styles.errorText}>{error}</Text>}
           <FlatList
-            data={meals}
+            data={rows}
             keyExtractor={(item) => item.$id}
-            renderItem={({ item }) => (
-              <MealRender
-                item={item}
-                onDelete={deleteMeal}
-                onEdit={openEditModal}
-              />
-            )}
+            renderItem={({ item }) =>
+              item.type === 'day' ? (
+                <DayHeader label={item.label} />
+              ) : (
+                <MealRender
+                  item={item}
+                  onDelete={deleteMeal}
+                  onEdit={openEditModal}
+                />
+              )
+            }
             ListHeaderComponent={renderHeader}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}

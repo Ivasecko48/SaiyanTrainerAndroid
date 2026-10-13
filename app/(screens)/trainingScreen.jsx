@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -13,12 +13,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useDate } from '@/contexts/DateContext';
 import ExerciseRender from '@/components/ExerciseRender';
 import TableHeader from '@/components/TableHeader';
+import DayHeader, { RangeLabel } from '@/components/DayHeader';
 import { EXERCISE_COLUMNS } from '@/components/tableStyles';
 import AddExerciseModal from '@/components/AddExerciseModal';
 import saiyanService from '@/services/saiyanService';
 import { parseNumber } from '@/utils/parseNumber';
 import { normalizeMuscles } from '@/utils/muscles';
-import { todayKey } from '@/utils/dates';
+import { inRange, withDayHeaders } from '@/utils/dates';
 import {
   loadCatalog,
   saveCustomExercise,
@@ -32,8 +33,9 @@ const DEFAULT_RPE = 8.5;
 const TrainingScreen = () => {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const { selectedDate, refresh } = useDate();
+  const { range, mode, rangeLabel, entryDate, refresh } = useDate();
 
+  // Sve vježbe korisnika; prikazuju se samo one u odabranom rasponu
   const [exercise, setExercise] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [NewExerciseName, setNewExerciseName] = useState('');
@@ -59,7 +61,13 @@ const TrainingScreen = () => {
     if (user) {
       fetchExercises();
     }
-  }, [selectedDate, user]);
+  }, [range?.start, range?.end, user]);
+
+  // Jedan dan: samo vježbe; tjedan ili svi dani: vježbe s naslovom svakog dana
+  const rows = useMemo(() => {
+    const visible = exercise.filter((ex) => inRange(ex.createdAt, range));
+    return mode === 'day' ? visible : withDayHeaders(visible, mode === 'all');
+  }, [exercise, range, mode]);
 
   useEffect(() => {
     if (user) {
@@ -74,14 +82,7 @@ const TrainingScreen = () => {
       setError(response.error);
       Alert.alert('Error', response.error);
     } else {
-      let exercises = response.data;
-      if (selectedDate) {
-        exercises = exercises.filter((ex) => {
-          const exDate = new Date(ex.createdAt).toISOString().split('T')[0];
-          return exDate === selectedDate;
-        });
-      }
-      setExercise(exercises);
+      setExercise(response.data);
       setError(null);
     }
 
@@ -135,8 +136,8 @@ const TrainingScreen = () => {
       return;
     }
 
-    // koristi selectedDate iz kalendara, a inače današnji (lokalni) datum
-    const dateToSave = new Date(selectedDate || todayKey());
+    // odabrani dan iz kalendara (kod tjedna i svih dana obično današnji)
+    const dateToSave = new Date(entryDate);
     const newData = {
       user_id: user.$id,
       createdAt: dateToSave.toISOString(),
@@ -229,21 +230,26 @@ const TrainingScreen = () => {
 
   return (
     <View style={styles.container}>
+      <RangeLabel label={rangeLabel} />
       {loading ? (
         <ActivityIndicator size="large" color="#fc7138" />
       ) : (
         <>
           {error && <Text style={styles.errorText}>{error}</Text>}
           <FlatList
-            data={exercise}
+            data={rows}
             keyExtractor={(item) => item.$id}
-            renderItem={({ item }) => (
-              <ExerciseRender
-                item={item}
-                onDelete={deleteExercise}
-                onEdit={openEditModal}
-              />
-            )}
+            renderItem={({ item }) =>
+              item.type === 'day' ? (
+                <DayHeader label={item.label} />
+              ) : (
+                <ExerciseRender
+                  item={item}
+                  onDelete={deleteExercise}
+                  onEdit={openEditModal}
+                />
+              )
+            }
             ListHeaderComponent={renderHeader}
             contentContainerStyle={styles.listContent}
             showsVerticalScrollIndicator={false}
