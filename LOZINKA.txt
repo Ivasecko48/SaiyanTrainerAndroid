@@ -1,0 +1,28 @@
+SAIYAN TRAINER - PRAVILA ZA LOZINKU (grana: lozinka)
+====================================================
+
+Što radi
+--------
+Kod registracije lozinka mora imati:
+- barem 8 znakova
+- barem jedno veliko slovo
+- barem jedno malo slovo
+- barem jedan poseban znak (sve što nije slovo, brojka ni razmak, npr. ! ? # @ .)
+
+Ispod polja za lozinku prikazuje se popis pravila; svako pravilo postaje zeleno
+s kvačicom čim je ispunjeno. Registracija ne prolazi dok nisu ispunjena sva
+pravila ("Lozinka ne ispunjava sva pravila").
+
+Provjera radi i s hrvatskim slovima (npr. "Č" je veliko, "š" malo slovo).
+
+Prijava se NE mijenja: postojeći računi sa starim (slabijim) lozinkama i dalje
+se normalno prijavljuju.
+
+Napomena: provjera je u aplikaciji. Appwrite na serveru sam traži samo
+minimalno 8 znakova; u konzoli (Auth -> Security) mogu se uključiti i dodatne
+zaštite poput "Password dictionary" (zabranjuje česte lozinke).
+
+Datoteke
+--------
+- utils/password.js (novo) - pravila i provjera
+- app/auth/index.jsx - popis pravila ispod lozinke i provjera kod registracije

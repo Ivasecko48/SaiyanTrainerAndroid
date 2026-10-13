@@ -11,6 +11,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { USERNAME_HINT } from '@/services/usernameService';
+import { checkPassword, isStrongPassword } from '@/utils/password';
 
 const AuthScreen = () => {
   const { login, register } = useAuth();
@@ -41,6 +42,12 @@ const AuthScreen = () => {
 
     if (isRegistering && !username.trim()) {
       setError('Username is required');
+      return;
+    }
+
+    // Pravila lozinke vrijede samo za nove račune; stare lozinke i dalje rade za prijavu
+    if (isRegistering && !isStrongPassword(password)) {
+      setError('Lozinka ne ispunjava sva pravila');
       return;
     }
 
@@ -105,6 +112,16 @@ const AuthScreen = () => {
         onChangeText={setPassword}
         secureTextEntry
       />
+
+      {isRegistering && (
+        <View style={styles.rules}>
+          {checkPassword(password).map((rule) => (
+            <Text key={rule.id} style={[styles.rule, rule.ok && styles.ruleOk]}>
+              {rule.ok ? '✓' : '•'} {rule.label}
+            </Text>
+          ))}
+        </View>
+      )}
 
       {isRegistering && (
         <TextInput
@@ -182,6 +199,20 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: '#007bff',
     fontSize: 16,
+  },
+  rules: {
+    alignSelf: 'flex-start',
+    marginTop: -4,
+    marginBottom: 12,
+  },
+  rule: {
+    fontSize: 13,
+    color: '#888',
+    marginBottom: 2,
+  },
+  ruleOk: {
+    color: '#2e9e4f',
+    fontWeight: '600',
   },
   hint: {
     alignSelf: 'flex-start',
