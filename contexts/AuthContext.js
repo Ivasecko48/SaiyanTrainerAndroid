@@ -8,6 +8,11 @@ import usernameService, {
 
 const AuthContext = createContext();
 
+// Računi registrirani uz potvrdu emaila imaju oznaku mustVerifyEmail i ne mogu ući
+// dok ne upišu kod iz maila. Stari računi nemaju oznaku, pa za njih potvrda ne vrijedi.
+const needsEmailCheck = (user) =>
+  user?.prefs?.mustVerifyEmail === true && !user.emailVerification;
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,13 +25,25 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     const response = await authService.getUser();
 
-    if (response?.error) {
+    if (!response || response.error) {
+      setUser(null);
+    } else if (needsEmailCheck(response)) {
+      // Ostala je prijava bez potvrđenog emaila (npr. aplikacija ugašena usred
+      // prijave): odjava, a kod sljedeće prijave aplikacija opet traži kod
+      await authService.logout();
       setUser(null);
     } else {
       setUser(response);
     }
 
     setLoading(false);
+  };
+
+  // Pošalji kod na email i javi ekranu za prijavu da ga traži od korisnika.
+  // Ekran s kodom se prikaže i kad slanje ne uspije (s greškom i "Pošalji kod").
+  const startEmailCheck = async (userId, email) => {
+    const sent = await authService.sendEmailCode(userId, email);
+    return { needsCode: true, userId, email, codeError: sent?.error };
   };
 
   // Prijava e-mailom ili korisničkim imenom. Za username se e-mail dohvaća
@@ -52,7 +69,18 @@ export const AuthProvider = ({ children }) => {
       return response;
     }
 
-    await checkUser();
+    const current = await authService.getUser();
+    if (!current) {
+      return { error: 'Prijava nije uspjela. Pokušaj ponovno.' };
+    }
+
+    if (needsEmailCheck(current)) {
+      // Appwrite ne da prijavu kodom dok je ova prijava aktivna
+      await authService.logout();
+      return startEmailCheck(current.$id, current.email);
+    }
+
+    setUser(current);
     return { success: true };
   };
 
@@ -78,20 +106,49 @@ export const AuthProvider = ({ children }) => {
       return check;
     }
 
-    const response = await authService.register(email, password, username);
+    const created = await authService.register(email, password, username);
 
+    if (created?.error) {
+      return created;
+    }
+
+    // Novi račun mora potvrditi email kodom. Oznaka se sprema u postavke računa
+    // (vrijedi na svakom mobitelu), zajedno s vodičem kroz aplikaciju koji čeka
+    // (TourContext). Za spremanje treba kratka prijava lozinkom.
+    const session = await authService.login(email, password);
+    if (!session?.error) {
+      await authService.updatePrefs({ mustVerifyEmail: true, tourPending: true });
+      // Appwrite ne da prijavu kodom dok je ova prijava aktivna
+      await authService.logout();
+    }
+
+    return startEmailCheck(created.$id, created.email || email);
+  };
+
+  // Kod iz maila: prijava kodom, nakon koje je email potvrđen
+  const verifyEmailCode = async (userId, code) => {
+    const response = await authService.loginWithCode(userId, code);
     if (response?.error) {
       return response;
     }
 
-    const result = await login(email, password); // Auto-login
-    if (result.success) {
-      // Novi korisnik: nakon prijave kreće vodič kroz aplikaciju (TourContext)
-      const updated = await authService.updatePrefs({ tourPending: true });
-      if (!updated?.error) setUser(updated);
+    let current = await authService.getUser();
+    if (!current) {
+      return { error: 'Prijava nije uspjela. Pokušaj ponovno.' };
     }
-    return result;
+
+    // Email je potvrđen kodom, pa oznaka više ne treba
+    if (current.prefs?.mustVerifyEmail) {
+      const { mustVerifyEmail, ...prefs } = current.prefs;
+      const updated = await authService.updatePrefs(prefs);
+      if (!updated?.error) current = updated;
+    }
+
+    setUser(current);
+    return { success: true };
   };
+
+  const resendEmailCode = (userId, email) => authService.sendEmailCode(userId, email);
 
   // Računi napravljeni prije uvođenja usernamea mogu ga postaviti jednom (na Profilu)
   const setUsername = async (usernameInput) => {
@@ -145,6 +202,8 @@ export const AuthProvider = ({ children }) => {
         user,
         login,
         register,
+        verifyEmailCode,
+        resendEmailCode,
         setUsername,
         logout,
         updateProfile,

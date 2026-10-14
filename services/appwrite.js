@@ -17,7 +17,9 @@ const config = {
 
 const client = new Client()
   .setEndpoint(config.endpoint)
-  .setProject(config.projectId);
+  .setProject(config.projectId)
+  // mailovi koje šalje Appwrite (npr. kod za potvrdu emaila) stižu na hrvatskom
+  .setLocale('hr');
 
 switch (Platform.OS) {
   case 'ios':

@@ -1,0 +1,66 @@
+SAIYAN TRAINER - POTVRDA EMAILA KODOM (grana: verifikacija-maila)
+=================================================================
+
+1. Što radi
+-----------
+- Novi korisnik nakon "Sign Up" dobije na email kod od 6 znamenki i upiše ga
+  u aplikaciji (ekran "Potvrdi email"). Tek s točnim kodom ulazi u aplikaciju
+  (i tada kreće vodič kroz aplikaciju).
+- Kod vrijedi 15 minuta. "Pošalji novi kod" radi nakon 30 sekundi.
+- "Natrag na prijavu": račun ostaje nepotvrđen. Kod sljedeće prijave
+  (emailom ili usernameom) aplikacija opet pošalje kod i traži ga.
+- Postojeći računi (napravljeni prije ove promjene) NE trebaju potvrdu,
+  prijava im radi kao i dosad.
+- Mail stiže na hrvatskom (Appwrite ima hrvatske predloške mailova).
+
+Besplatno je: mail šalje Appwrite Cloud preko svog poslužitelja. Pro plan
+treba samo za vlastiti mail server i drukčiji izgled maila, a to ne treba.
+
+
+2. Kako radi (tehnički)
+-----------------------
+Koristi se Appwrite Email OTP: createEmailToken pošalje kod, a prijava tim
+kodom (createSession) potvrdi email (user.emailVerification postane true).
+Link za potvrdu nije korišten jer Appwrite prihvaća samo linkove na
+registriranu web domenu (trebala bi posebna web stranica).
+
+Registracija:
+1. napravi račun (email, lozinka, username)
+2. kratka prijava lozinkom samo da se u postavke računa spremi
+   mustVerifyEmail: true (i tourPending: true za vodič)
+3. odjava, jer Appwrite ne da prijavu kodom dok je druga prijava aktivna
+4. pošalji kod na email -> ekran za kod -> prijava kodom
+5. nakon potvrde oznaka mustVerifyEmail se briše
+
+Prijava: ako račun ima mustVerifyEmail, a email nije potvrđen, aplikacija
+odjavi tu prijavu, pošalje kod i traži ga. Stari računi nemaju tu oznaku.
+
+Pokretanje aplikacije: ako je ostala prijava nepotvrđenog novog računa
+(npr. aplikacija ugašena usred prijave), aplikacija je odjavi.
+
+
+3. Appwrite konzola
+-------------------
+- Auth -> Settings: provjeri da je uključen "Email OTP" (uz "Email/Password").
+  Ako nije, aplikacija javi "Potvrda emaila nije uključena u Appwriteu".
+- Ograničenje Appwritea: najviše 10 kodova na sat za isti email.
+- Kolekcije NE treba ograničavati na "Users (verified)", jer bi to
+  zaključalo stare (nepotvrđene) račune.
+
+
+4. Test (Expo Go)
+-----------------
+1. Registriraj novi račun sa stvarnim emailom -> stiže mail s kodom
+   (provjeri i spam) -> upiši kod -> ulaziš u aplikaciju i kreće vodič.
+2. Krivi kod -> poruka "Kod nije točan ili je istekao".
+3. Novi račun, na ekranu za kod klikni "Natrag na prijavu", pa se prijavi
+   -> opet stiže kod i traži se potvrda.
+4. Stari račun -> prijava radi bez koda.
+
+
+5. Datoteke
+-----------
+- services/appwrite.js - mailovi na hrvatskom (setLocale('hr'))
+- services/authService.js - slanje koda, prijava kodom, poruke za greške
+- contexts/AuthContext.js - registracija i prijava s potvrdom emaila
+- app/auth/index.jsx - ekran "Potvrdi email"
