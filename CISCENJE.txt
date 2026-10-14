@@ -1,0 +1,20 @@
+SAIYAN TRAINER - ČIŠĆENJE PRIJE APK-a (grana: ciscenje)
+=======================================================
+
+Maknuto (nije se koristilo):
+- api/huggingface.js - stari pokušaj s AI-jem (aplikacija je bez AI-ja)
+- react-native-dotenv (paket i babel plugin) - koristio ga je samo taj kod
+- HF_TOKEN iz .env (lokalno; .env nije u gitu)
+- slike iz Expo predloška: react-logo*.png, partial-react-logo.png
+
+Nakon promjene babel postavki dev server pokreni s čišćenjem cachea:
+  npx expo start --go --clear
+U C:\st prije sljedećeg builda pokreni "npm ci" (promijenio se package.json).
+
+Java za release build: Android Studio se ažurirao i njegov JBR je sada
+Java 25, a sustavska Java je 24. S njima build pada u koraku
+react-native-worklets (CMake) s porukom "A restricted method in
+java.lang.System has been called". Radi s JDK 17:
+  $env:JAVA_HOME = "$env:USERPROFILE\.gradle\jdks\eclipse_adoptium-17-amd64-windows.2"
+(taj JDK je skinuo Gradle; sigurnije je instalirati Temurin 17 s adoptium.net)
+CLAUDE.md je ažuriran.
