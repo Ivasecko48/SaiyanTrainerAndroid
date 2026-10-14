@@ -1,0 +1,67 @@
+SAIYAN TRAINER - NOVI IZGLED PRIJAVE I REGISTRACIJE
+===================================================
+
+1. Što je promijenjeno
+----------------------
+Registracija:
+- redoslijed polja: Saiyan name -> Email -> Lozinka (s pravilima) -> Potvrdi lozinku
+- "Username (Saiyan name)" je sada samo "Saiyan name"
+
+Prijava:
+- polja "Email ili Saiyan name" i "Lozinka"
+
+Izgled (u kontekstu Dragon Balla, bez narančaste):
+- Prijava: noć, Shenron sa slike iz Nano Banane (tvoja slika), malo udaljen
+  da se vidi više neba (tijelo i dalje izlazi iz ekrana sa strana, nije
+  odrezano); šuma na dnu zamijenjena planinama i zlatnim tlom, a vrtlog se
+  mekim sjajem i snopom svjetla spušta do tla. Kartica je tamno staklo,
+  sa zelenim gumbom i zlatnim linkom.
+  Podnaslov: "Shenron čeka tvoju želju."
+- Registracija: dan na areni Turnira svjetskih borilačkih vještina (hram s
+  crvenim krovovima, palme, publika, kameni ring). Kartica je svijetlo
+  staklo, s plavim gumbom.
+  Podnaslov: "Upiši se na Turnir svjetskih borilačkih vještina!"
+- Kod prebacivanja prijava <-> registracija pozadina se lagano pretopi.
+- Ekran "Potvrdi email" ima isti stil (pozadinu prijave ili registracije).
+- Svi tekstovi i poruke o greškama su na hrvatskom.
+- Ikone u status baru: svijetle na noćnom nebu, tamne na dnevnom.
+
+Tipkovnica: s edge-to-edge prikazom (SDK 57) Android ne smanji prozor kad se
+otvori tipkovnica, pa se obrazac sam pomakne iznad nje (KeyboardAvoidingView).
+Obrazac se može i skrolati.
+
+
+2. Slike
+--------
+- assets/images/auth/login_shenron.jpg (prijava, 470 KB)
+- assets/images/auth/signup_arena.jpg (registracija, 473 KB)
+Obje su 1080 x 2340 i prilagode se ekranu. Izvor su skripte u
+scripts/auth-backgrounds/ (nisu dio aplikacije, ne ulaze u APK):
+- login.js složi pozadinu prijave iz shenron_source.png (slika iz Nano
+  Banane): malo je smanji, rubove rastegne do ruba ekrana, gore docrta nebo
+  istih boja, a šumu zamijeni planinama i tlom.
+    node scripts/auth-backgrounds/login.js
+  Ako imaš veću (originalnu) verziju slike, samo zamijeni shenron_source.png
+  i ponovo pokreni skriptu: rezultat će biti oštriji (sada je izvor 474 px
+  širok, pa se slika povećava skoro 2x).
+- arena.js nacrta pozadinu registracije (originalni crtež kodom).
+    node scripts/auth-backgrounds/arena.js
+
+
+3. Test (Expo Go)
+-----------------
+1. Odjavi se. Na ekranu za prijavu treba biti Shenron (noć).
+2. "Nemaš račun? Registriraj se": pozadina se pretopi u arenu, polja idu
+   redom Saiyan name, Email, Lozinka, Potvrdi lozinku.
+3. Klikni u donje polje: obrazac se pomakne iznad tipkovnice.
+4. Registracija i kod iz maila rade kao i prije (ekran za kod je u istom stilu).
+5. Prijava emailom ili Saiyan nameom radi kao i prije.
+
+
+4. Datoteke
+-----------
+- app/auth/index.jsx - novi izgled, redoslijed polja, tekstovi na hrvatskom
+- contexts/AuthContext.js - poruke "Saiyan name" umjesto "username"
+- assets/images/auth/ - pozadine
+- scripts/auth-backgrounds/ - skripte za pozadine i izvorna slika Shenrona
+- CLAUDE.md - napomena o pozadinama

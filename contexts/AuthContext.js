@@ -54,7 +54,7 @@ export const AuthProvider = ({ children }) => {
     if (!email.includes('@')) {
       const username = normalizeUsername(email);
       if (!USERNAME_RULE.test(username)) {
-        return { error: 'Upiši e-mail ili ispravan username' };
+        return { error: 'Upiši email ili ispravan Saiyan name' };
       }
       const lookup = await usernameService.emailFor(username);
       if (lookup.error) {
@@ -87,14 +87,14 @@ export const AuthProvider = ({ children }) => {
   // Provjera usernamea prije registracije ili naknadnog postavljanja
   const checkUsername = async (username) => {
     if (!USERNAME_RULE.test(username)) {
-      return { error: `Username: ${USERNAME_HINT}` };
+      return { error: `Saiyan name: ${USERNAME_HINT}` };
     }
     const check = await usernameService.isAvailable(username);
     if (check.error) {
       return check;
     }
     if (!check.available) {
-      return { error: 'Taj username je već zauzet' };
+      return { error: 'Taj Saiyan name je već zauzet' };
     }
     return { success: true };
   };
