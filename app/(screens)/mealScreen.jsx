@@ -16,6 +16,7 @@ import TableHeader from '@/components/TableHeader';
 import DayHeader, { RangeLabel } from '@/components/DayHeader';
 import { MEAL_COLUMNS } from '@/components/tableStyles';
 import AddMealModal from '@/components/AddMealModal';
+import ShareDayModal from '@/components/ShareDayModal';
 import saiyanService from '@/services/saiyanService';
 import {
   loadFoodCatalog,
@@ -42,6 +43,8 @@ const MealsScreen = () => {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { selectedDate, range, mode, rangeLabel, entryDate } = useDate();
+  // Pregled i dijeljenje dana kao slike
+  const [shareOpen, setShareOpen] = useState(false);
 
   // Svi obroci korisnika; prikazuju se samo oni u odabranom rasponu
   const [meals, setMeals] = useState([]);
@@ -306,7 +309,11 @@ const MealsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <RangeLabel label={rangeLabel} />
+      {/* Dijeli se samo jedan dan, i samo ako ima obroka */}
+      <RangeLabel
+        label={rangeLabel}
+        onShare={mode === 'day' && visible.length > 0 ? () => setShareOpen(true) : undefined}
+      />
       <View style={styles.summary}>
         <View style={styles.summaryItem}>
           <Text style={styles.summaryValue}>{totalCalories}</Text>
@@ -379,6 +386,17 @@ const MealsScreen = () => {
         <Text style={styles.addButtonText}>+ Add Meal</Text>
       </TouchableOpacity>
       {/* Modal */}
+      <ShareDayModal
+        visible={shareOpen}
+        onClose={() => setShareOpen(false)}
+        type="meals"
+        items={visible}
+        dayKey={selectedDate}
+        targets={targets}
+        username={user?.name}
+        avatar={user?.prefs?.avatar}
+      />
+
       <AddMealModal
         modalVisible={modalVisible}
         onClose={closeModal}

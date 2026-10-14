@@ -23,6 +23,7 @@ import { inRange, withDayHeaders } from '@/utils/dates';
 import { totalVolume, formatVolume } from '@/utils/volume';
 import { buildWeeklyReport } from '@/utils/weeklyReport';
 import WeeklyReportCard from '@/components/WeeklyReportCard';
+import ShareDayModal from '@/components/ShareDayModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   loadCatalog,
@@ -47,7 +48,9 @@ const DEFAULT_RPE = 8.5;
 const TrainingScreen = () => {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const { range, mode, rangeLabel, entryDate, refresh } = useDate();
+  const { selectedDate, range, mode, rangeLabel, entryDate, refresh } = useDate();
+  // Pregled i dijeljenje dana kao slike
+  const [shareOpen, setShareOpen] = useState(false);
 
   // Sve vježbe korisnika; prikazuju se samo one u odabranom rasponu
   const [exercise, setExercise] = useState([]);
@@ -82,7 +85,7 @@ const TrainingScreen = () => {
 
   // Jedan dan: samo vježbe; više dana: vježbe s naslovom (i volumenom) svakog dana.
   // Ukupni volumen je zbroj svih prikazanih vježbi.
-  const { rows, volume } = useMemo(() => {
+  const { rows, volume, visible } = useMemo(() => {
     const visible = exercise.filter((ex) => inRange(ex.createdAt, range));
     return {
       rows:
@@ -92,6 +95,7 @@ const TrainingScreen = () => {
               formatVolume(totalVolume(dayItems)),
             ),
       volume: totalVolume(visible),
+      visible,
     };
   }, [exercise, range, mode]);
 
@@ -295,7 +299,11 @@ const TrainingScreen = () => {
 
   return (
     <View style={styles.container}>
-      <RangeLabel label={rangeLabel} />
+      {/* Dijeli se samo jedan dan, i samo ako ima vježbi */}
+      <RangeLabel
+        label={rangeLabel}
+        onShare={mode === 'day' && visible.length > 0 ? () => setShareOpen(true) : undefined}
+      />
       {loading ? (
         <ActivityIndicator size="large" color="#fc7138" />
       ) : (
@@ -328,6 +336,16 @@ const TrainingScreen = () => {
       </TouchableOpacity>
 
       {/* Modal */}
+      <ShareDayModal
+        visible={shareOpen}
+        onClose={() => setShareOpen(false)}
+        type="training"
+        items={visible}
+        dayKey={selectedDate}
+        username={user?.name}
+        avatar={user?.prefs?.avatar}
+      />
+
       <AddExerciseModal
         modalVisible={modalVisible}
         onClose={closeModal}

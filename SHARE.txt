@@ -1,0 +1,40 @@
+SAIYAN TRAINER - DIJELJENJE DANA KAO SLIKE (grana: share)
+=========================================================
+
+1. Što radi
+-----------
+- Na "Strong Boy" i "Big man", desno od oznake datuma na vrhu ekrana
+  ("Danas, 14.10."), je ikona za dijeljenje.
+- Vidi se samo kad je prikazan JEDAN dan (ne tjedan, mjesec ni svi dani)
+  i kad taj dan ima unose.
+- Klik otvara pregled kartice dana u Saiyan stilu:
+  - zaglavlje: tvoj avatar, "SAIYAN TRAINER", Trening/Prehrana i datum
+  - Trening: vježbe (serije × ponavljanja · kilaža, mišići, volumen),
+    zbroj vježbi, serija i volumena te trenirani mišići
+  - Prehrana: obroci (kcal, proteini, masti, UH), zbrojevi i dnevni cilj
+    iz profila (zeleno/crveno)
+  - potpis: @username · "Power level raste 🔥"
+- "Podijeli" napravi sliku (PNG) kartice i otvori Androidov izbornik za
+  dijeljenje: WhatsApp (chat ili status), Instagram (objava, story, poruka),
+  Viber, e-mail...
+
+Ne snima se ekran (tablica se skrola i ima gumbe), nego posebna kartica.
+
+
+2. Paketi (rade i u Expo Gou)
+-----------------------------
+- react-native-view-shot 5.1.0 - slika (snapshot) kartice
+- expo-sharing ~57.0.23 - Androidov izbornik za dijeljenje
+  (Expo je u app.json dodao i plugin "expo-sharing"; on služi za PRIMANJE
+  dijeljenja u aplikaciju i po defaultu je isključen, pa ništa ne mijenja.)
+
+Za idući APK: android mapu treba ponovno generirati
+(npx expo prebuild --platform android), da uključi nove pakete i plugin.
+
+
+3. Datoteke
+-----------
+- components/ShareDayModal.jsx (novo) - pregled kartice, snimanje i dijeljenje
+- components/DayHeader.jsx - ikona za dijeljenje uz oznaku datuma
+- app/(screens)/trainingScreen.jsx, app/(screens)/mealScreen.jsx - gumb i pregled
+- package.json, app.json - novi paketi
