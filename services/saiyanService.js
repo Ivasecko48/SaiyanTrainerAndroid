@@ -1,6 +1,14 @@
 import databaseService from './databaseService';
-import { ID, Query } from 'react-native-appwrite';
+import { ID, Permission, Query, Role } from 'react-native-appwrite';
 import { normalizeMuscles } from '../utils/muscles';
+
+// Vježbe i obroci pripadaju samo svom vlasniku. S uključenim "Document security"
+// u kolekciji tuđe dokumente nitko ne može čitati, mijenjati ni brisati.
+const ownerOnly = (userId) => [
+  Permission.read(Role.user(userId)),
+  Permission.update(Role.user(userId)),
+  Permission.delete(Role.user(userId)),
+];
 
 // appwrite db and coll id
 const dbId = process.env.EXPO_PUBLIC_APPWRITE_DB_ID;
@@ -105,7 +113,8 @@ const saiyanService = {
       dbId,
       exerColId,
       data,
-      ID.unique()
+      ID.unique(),
+      ownerOnly(user_id)
     );
 
     if (response?.error) {
@@ -136,7 +145,7 @@ const saiyanService = {
     };
 
     const response = await withoutMacrosIfUnknown(
-      (doc) => databaseService.createDocument(dbId, mealsColId, doc, ID.unique()),
+      (doc) => databaseService.createDocument(dbId, mealsColId, doc, ID.unique(), ownerOnly(user_id)),
       data
     );
 

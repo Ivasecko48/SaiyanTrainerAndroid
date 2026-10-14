@@ -1,0 +1,58 @@
+SAIYAN TRAINER - ZAŠTITA PODATAKA U APPWRITEU (grana: zastita-podataka)
+=======================================================================
+
+1. Problem
+----------
+Aplikacija prikazuje samo tvoje vježbe i obroke jer ih filtrira po polju
+user_id. Ali ako kolekcije u Appwriteu imaju dozvolu "Users -> Read" (ili
+Update/Delete), svaki prijavljeni korisnik može preko Appwrite API-ja čitati,
+mijenjati i brisati TUĐE treninge i obroke. Filtar u aplikaciji tu ne pomaže.
+
+
+2. Rješenje
+-----------
+- Svaki dokument (vježba, obrok) ima dozvole samo za svog vlasnika:
+  read, update i delete za "user:<id vlasnika>".
+- Kolekcije imaju uključen "Document security" (vrijede dozvole pojedinog
+  dokumenta), a kolekcija sama daje korisnicima ("Users") samo "Create".
+- Funkcija za pretragu i karticu Saiyana i dalje radi: ona čita preko
+  serverskog ključa, ne kao korisnik.
+
+U aplikaciji: novi treninzi i obroci spremaju se s dozvolama samo za vlasnika
+(services/saiyanService.js). Appwrite je i dosad vlasniku davao te dozvole,
+pa se za korisnika ništa ne mijenja.
+
+
+3. Što trebaš napraviti (jednom)
+--------------------------------
+1. Appwrite konzola -> tvoj projekt -> Overview -> Integrations -> API keys
+   -> Create API key. Ime npr. "dozvole", scopeovi (Database):
+   collections.read, collections.write, documents.read, documents.write.
+2. Ključ dodaj u .env (nije u gitu) kao novi redak:
+     APPWRITE_API_KEY=tvoj_ključ
+3. Provjera (ništa ne mijenja):
+     node scripts/appwrite-permissions.js
+   Ispiše koliko dokumenata ima krive dozvole i kakve su postavke kolekcija.
+4. Ispravak:
+     node scripts/appwrite-permissions.js --fix
+   Prvo ispravi dozvole svih dokumenata, pa tek onda kolekcije (da nitko ni
+   na trenutak ne izgubi svoje podatke).
+5. Nakon toga obriši API ključ u konzoli i redak iz .env (više ne treba).
+
+Možeš i ručno u konzoli (Databases -> baza -> kolekcija -> Settings ->
+Permissions): ostavi samo "Users: Create" i uključi "Document security".
+Ali dokumente s krivim dozvolama ispravlja samo skripta.
+
+
+4. Test
+-------
+- U aplikaciji: tvoji treninzi i obroci se vide, dodavanje, uređivanje i
+  brisanje rade kao i prije.
+- Pretraga Saiyana i njihova kartica rade kao i prije.
+
+
+5. Datoteke
+-----------
+- services/saiyanService.js - novi dokumenti s dozvolama samo za vlasnika
+- services/databaseService.js - createDocument prima dozvole
+- scripts/appwrite-permissions.js - provjera i ispravak dozvola (jednom)

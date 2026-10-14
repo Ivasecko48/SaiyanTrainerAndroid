@@ -11,10 +11,10 @@ const databaseService = {
       return { error: error.message };
     }
   },
-  // Create Docs
-  async createDocument(dbId, colId, data, id = null) {
+  // Create Docs (permissions: tko smije čitati, mijenjati i brisati dokument)
+  async createDocument(dbId, colId, data, id = null, permissions = undefined) {
     try {
-      return await database.createDocument(dbId, colId, id || undefined, data);
+      return await database.createDocument(dbId, colId, id || undefined, data, permissions);
     } catch (error) {
       console.error('error creating document', error.message);
       return {
