@@ -17,6 +17,7 @@ import DayHeader, { RangeLabel } from '@/components/DayHeader';
 import { MEAL_COLUMNS } from '@/components/tableStyles';
 import AddMealModal from '@/components/AddMealModal';
 import ShareDayModal from '@/components/ShareDayModal';
+import { useTourTarget } from '@/contexts/TourContext';
 import saiyanService from '@/services/saiyanService';
 import {
   loadFoodCatalog,
@@ -45,6 +46,8 @@ const MealsScreen = () => {
   const { selectedDate, range, mode, rangeLabel, entryDate } = useDate();
   // Pregled i dijeljenje dana kao slike
   const [shareOpen, setShareOpen] = useState(false);
+  const summaryTourRef = useTourTarget('meal-summary');
+  const addTourRef = useTourTarget('add-meal');
 
   // Svi obroci korisnika; prikazuju se samo oni u odabranom rasponu
   const [meals, setMeals] = useState([]);
@@ -314,7 +317,7 @@ const MealsScreen = () => {
         label={rangeLabel}
         onShare={mode === 'day' && visible.length > 0 ? () => setShareOpen(true) : undefined}
       />
-      <View style={styles.summary}>
+      <View ref={summaryTourRef} collapsable={false} style={styles.summary}>
         <View style={styles.summaryItem}>
           <Text style={styles.summaryValue}>{totalCalories}</Text>
           <Text style={styles.summaryLabel}>Ukupno kalorija</Text>
@@ -382,7 +385,7 @@ const MealsScreen = () => {
           />
         </>
       )}
-      <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
+      <TouchableOpacity ref={addTourRef} style={styles.addButton} onPress={openAddModal}>
         <Text style={styles.addButtonText}>+ Add Meal</Text>
       </TouchableOpacity>
       {/* Modal */}

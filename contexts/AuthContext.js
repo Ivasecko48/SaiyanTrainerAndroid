@@ -83,7 +83,14 @@ export const AuthProvider = ({ children }) => {
     if (response?.error) {
       return response;
     }
-    return login(email, password); // Auto-login
+
+    const result = await login(email, password); // Auto-login
+    if (result.success) {
+      // Novi korisnik: nakon prijave kreće vodič kroz aplikaciju (TourContext)
+      const updated = await authService.updatePrefs({ tourPending: true });
+      if (!updated?.error) setUser(updated);
+    }
+    return result;
   };
 
   // Računi napravljeni prije uvođenja usernamea mogu ga postaviti jednom (na Profilu)
@@ -129,6 +136,8 @@ export const AuthProvider = ({ children }) => {
   const updateAvatar = (avatar) => savePrefs({ avatar });
   // Tko se sakrije, ne pojavljuje se drugima u pretrazi Saiyana
   const updateSearchVisible = (visible) => savePrefs({ searchHidden: !visible });
+  // Vodič kroz aplikaciju čeka na pokretanje (samo novi korisnici)
+  const setTourPending = (pending) => savePrefs({ tourPending: pending });
 
   return (
     <AuthContext.Provider
@@ -141,6 +150,7 @@ export const AuthProvider = ({ children }) => {
         updateProfile,
         updateAvatar,
         updateSearchVisible,
+        setTourPending,
         loading,
       }}
     >

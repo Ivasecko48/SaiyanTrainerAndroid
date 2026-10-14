@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import KettlebellSlider from '@/components/KettlebellSlider';
 import NumberChips from '@/components/NumberChips';
 import AvatarPickerModal from '@/components/AvatarPickerModal';
 import SaiyanSearchModal from '@/components/SaiyanSearchModal';
+import { useTour, useTourTarget } from '@/contexts/TourContext';
 import { avatarImage, DEFAULT_AVATAR } from '@/components/avatars';
 import { USERNAME_HINT } from '@/services/usernameService';
 import {
@@ -73,6 +74,10 @@ const ProfileScreen = () => {
     updateSearchVisible,
   } = useAuth();
   const [searchVisible, setSearchVisible] = useState(false);
+  const tour = useTour();
+  const userTourRef = useTourTarget('profile-user');
+  const slidersTourRef = useTourTarget('profile-sliders');
+  const scrollRef = useRef(null);
   const [savingVisibility, setSavingVisibility] = useState(false);
   const visibleInSearch = user?.prefs?.searchHidden !== true;
 
@@ -97,6 +102,12 @@ const ProfileScreen = () => {
   useEffect(() => {
     setProfile(withDefaults(user?.prefs?.profile));
   }, [user?.$id]);
+
+  // Vodič kreće (npr. linkom s dna profila): vrati profil na vrh,
+  // da se kasnije vide elementi o kojima vodič govori
+  useEffect(() => {
+    if (tour?.active) scrollRef.current?.scrollTo({ y: 0, animated: false });
+  }, [tour?.active]);
 
   const update = (key) => (value) => setProfile((p) => ({ ...p, [key]: value }));
 
@@ -172,12 +183,13 @@ const ProfileScreen = () => {
 
   return (
     <ScrollView
+      ref={scrollRef}
       style={styles.container}
       contentContainerStyle={styles.content}
       scrollEnabled={scrollEnabled}
       keyboardShouldPersistTaps="handled"
     >
-      <View style={styles.userRow}>
+      <View ref={userTourRef} collapsable={false} style={styles.userRow}>
         <TouchableOpacity
           onPress={() => setPickerVisible(true)}
           style={styles.avatarButton}
@@ -264,7 +276,7 @@ const ProfileScreen = () => {
       />
 
       <Text style={styles.section}>Veličina</Text>
-      <View style={styles.heightRow}>
+      <View ref={slidersTourRef} collapsable={false} style={styles.heightRow}>
         <KettlebellSlider
           vertical
           length={320}
@@ -396,6 +408,12 @@ const ProfileScreen = () => {
         )}
       </TouchableOpacity>
 
+      {/* Ponovno pokretanje vodiča kroz aplikaciju */}
+      <TouchableOpacity style={styles.tourLink} onPress={tour?.start}>
+        <Feather name="help-circle" size={16} color={ORANGE} />
+        <Text style={styles.tourLinkText}>Vodič kroz aplikaciju</Text>
+      </TouchableOpacity>
+
       <SaiyanSearchModal
         visible={searchVisible}
         onClose={() => setSearchVisible(false)}
@@ -489,6 +507,19 @@ const styles = StyleSheet.create({
     backgroundColor: ORANGE,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  tourLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 18,
+    paddingVertical: 8,
+  },
+  tourLinkText: {
+    color: ORANGE,
+    fontSize: 15,
+    fontWeight: '600',
   },
   visibilityRow: {
     flexDirection: 'row',

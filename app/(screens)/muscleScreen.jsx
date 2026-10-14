@@ -16,6 +16,7 @@ import BodyFigure from '@/components/BodyFigure';
 import MuscleExercisesSheet from '@/components/MuscleExercisesSheet';
 import WorkoutPlanSheet from '@/components/WorkoutPlanSheet';
 import { generateWorkout } from '@/utils/workoutGenerator';
+import { useTourTarget } from '@/contexts/TourContext';
 import {
   MUSCLES,
   colorForCount,
@@ -41,6 +42,8 @@ const MuscleScreen = () => {
   // Generirani trening za mišiće koji su ovaj tjedan crveni (i žuti, ako stane)
   const [plan, setPlan] = useState(null);
   const [planOpen, setPlanOpen] = useState(false);
+  const figureTourRef = useTourTarget('body-figure');
+  const generateTourRef = useTourTarget('generate');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -138,7 +141,7 @@ const MuscleScreen = () => {
       {error && <Text style={styles.errorText}>{error}</Text>}
 
       <View style={styles.row}>
-        <View style={styles.figure}>
+        <View ref={figureTourRef} collapsable={false} style={styles.figure}>
           <BodyFigure colors={colors} side={side} onPress={handleFigurePress} />
           <Pressable style={styles.flipButton} onPress={flip}>
             <Feather name="rotate-cw" size={14} color="#fc7138" />
@@ -187,6 +190,7 @@ const MuscleScreen = () => {
       </View>
 
       <Pressable
+        ref={generateTourRef}
         style={[styles.generateButton, loading && styles.generateDisabled]}
         onPress={handleGenerate}
         disabled={loading}

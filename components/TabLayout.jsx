@@ -19,6 +19,15 @@ import { useDate } from '@/contexts/DateContext';
 import saiyanService from '@/services/saiyanService';
 import { avatarImage } from '@/components/avatars';
 import { keysInRange } from '@/utils/dates';
+import { useTourTarget, TourTarget } from '@/contexts/TourContext';
+import TourOverlay from '@/components/TourOverlay';
+
+// Ikone tabova na koje pokazuje vodič kroz aplikaciju
+const TAB_TOUR_IDS = {
+  trainingScreen: 'tab-training',
+  mealScreen: 'tab-meals',
+  muscleScreen: 'tab-muscles',
+};
 
 // zadana visina donje trake s tabovima (bez sigurnog razmaka na dnu ekrana)
 const TAB_BAR_HEIGHT = 26;
@@ -29,6 +38,7 @@ const CALENDAR_GAP = 16;
 const HeaderActions = () => {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const avatarTourRef = useTourTarget('header-avatar');
 
   const logoutAlert = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -47,6 +57,7 @@ const HeaderActions = () => {
   return user ? (
     <View style={styles.headerActions}>
       <TouchableOpacity
+        ref={avatarTourRef}
         onPress={() => router.navigate('/(screens)/profileScreen')}
         style={styles.headButton}
         accessibilityLabel="Profil"
@@ -78,6 +89,7 @@ export default function TabLayout() {
   const { user } = useAuth();
   const [exercises, setExercises] = useState([]);
   const pathname = usePathname();
+  const calendarTourRef = useTourTarget('calendar');
   const insets = useSafeAreaInsets();
   const calendarBottom = insets.bottom + TAB_BAR_HEIGHT + CALENDAR_GAP;
   // Tab s mišićima prikazuje cijeli tekući tjedan, a profil nije vezan uz datum,
@@ -189,11 +201,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => {
             if (route.name === 'muscleScreen') {
               return (
-                <MaterialCommunityIcons
-                  name="arm-flex"
-                  size={size}
-                  color={color}
-                />
+                <TourTarget id={TAB_TOUR_IDS.muscleScreen}>
+                  <MaterialCommunityIcons
+                    name="arm-flex"
+                    size={size}
+                    color={color}
+                  />
+                </TourTarget>
               );
             }
 
@@ -208,7 +222,11 @@ export default function TabLayout() {
                 break;
             }
 
-            return <Ionicons name={iconName} size={size} color={color} />;
+            return (
+              <TourTarget id={TAB_TOUR_IDS[route.name]}>
+                <Ionicons name={iconName} size={size} color={color} />
+              </TourTarget>
+            );
           },
         })}
       >
@@ -244,6 +262,7 @@ export default function TabLayout() {
       {/* FAB Button */}
       {showCalendarButton && (
         <TouchableOpacity
+          ref={calendarTourRef}
           style={[styles.fab, { bottom: calendarBottom }]}
           onPress={openCalendar}
         >
@@ -301,6 +320,9 @@ export default function TabLayout() {
           </Pressable>
         </Pressable>
       </Modal>
+
+      {/* Vodič kroz aplikaciju (Flying Nimbus), iznad svega */}
+      <TourOverlay />
     </View>
   );
 }

@@ -1,0 +1,64 @@
+SAIYAN TRAINER - VODIČ KROZ APLIKACIJU (grana: vodic)
+=====================================================
+
+1. Što radi
+-----------
+Interaktivni vodič od 12 koraka za nove korisnike:
+- ekran se zatamni, a element o kojem se priča ostaje osvijetljen
+  (zaobljena "rupa" sa žutim obrubom)
+- tekst je u oblaku u obliku Flying Nimbusa (Gokuov žuti oblak), bez strelica:
+  oblak izleti iz samog elementa (krene malen iz njegove sredine i doleti na
+  svoje mjesto), a od elementa do oblaka vodi trag od tri sve veća oblačića
+- oblak ide ispod ili iznad elementa, gdje ima mjesta; ako je element prevelik
+  (npr. tijelo na Muscle Groups), ide preko njega
+- svaki korak ima malo drukčiji oblak (3 rasporeda puhova, i zrcaljeni)
+- oblak je sjenčan (svjetlija ispuna, zlatna sjena uz donji rub, odsjaji),
+  sve od običnih View-ova, bez slika
+- "Dalje"/"Natrag": oblak se vrati u element, pa izleti iz sljedećeg
+- gumbi: "Preskoči", "Natrag", "Dalje" (na kraju "Kreni!") i brojač koraka
+- vodič sam prebacuje tabove (Strong Boy, Big man, Muscle Groups, Profil)
+
+Performanse (zašto više ne zapinje):
+- sve animacije idu preko nativnog drivera, pa su glatke i dok se ekran crta
+- korak na istom ekranu odmah mjeri element (bez čekanja i treptanja)
+- kod prelaska na drugi tab vodič pričeka da JS završi s crtanjem novog ekrana
+  (requestIdleCallback), pa tek onda traži element
+- kad vodič krene, profil se vrati na vrh, da se klizači vide
+
+Koraci:
+ 1. Dobrodošlica
+ 2. Strong Boy (ikona taba)
+ 3. + Add Exercise
+ 4. Kalendar
+ 5. Big man: sažetak kalorija i proteina
+ 6. + Add Meal
+ 7. Muscle Groups: tijelo i boje mišića
+ 8. Generiraj trening
+ 9. Glava Saiyana u zaglavlju (profil)
+10. Profil: visina, težina, godine, aktivnost, cilj, Spremi profil
+11. Saiyan name, pretraga i vidljivost
+12. Kraj: tjedni izvještaj i dijeljenje dana
+
+
+2. Kada se pokreće
+------------------
+- Automatski, samo jednom, odmah nakon registracije novog računa.
+  Pamti se u Appwrite postavkama računa (prefs.tourPending), pa se ne
+  ponavlja ni na drugom mobitelu. "Preskoči" ili "Kreni!" ga gase.
+- Ručno: Profil -> "Vodič kroz aplikaciju" (na dnu, ispod "Spremi profil").
+  Tako ga mogu pogledati i postojeći korisnici.
+
+
+3. Datoteke
+-----------
+- utils/tourSteps.js (novo) - tekstovi i redoslijed koraka
+- contexts/TourContext.js (novo) - stanje vodiča i elementi na koje pokazuje
+- components/TourOverlay.jsx (novo) - zatamnjenje, položaj i animacija oblaka,
+  trag oblačića, gumbi
+- components/NimbusBubble.jsx (novo) - oblak Flying Nimbus i mali oblačići za
+  trag, od View-ova
+- contexts/AuthContext.js - nakon registracije označi da vodič čeka
+- app/(screens)/_layout.jsx - TourProvider
+- components/TabLayout.jsx - ikone tabova, glava, kalendar + overlay
+- trainingScreen, mealScreen, muscleScreen, profileScreen - označeni elementi,
+  link "Vodič kroz aplikaciju" na Profilu (i povratak profila na vrh)

@@ -24,6 +24,7 @@ import { totalVolume, formatVolume } from '@/utils/volume';
 import { buildWeeklyReport } from '@/utils/weeklyReport';
 import WeeklyReportCard from '@/components/WeeklyReportCard';
 import ShareDayModal from '@/components/ShareDayModal';
+import { useTourTarget } from '@/contexts/TourContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   loadCatalog,
@@ -51,6 +52,7 @@ const TrainingScreen = () => {
   const { selectedDate, range, mode, rangeLabel, entryDate, refresh } = useDate();
   // Pregled i dijeljenje dana kao slike
   const [shareOpen, setShareOpen] = useState(false);
+  const addTourRef = useTourTarget('add-exercise');
 
   // Sve vježbe korisnika; prikazuju se samo one u odabranom rasponu
   const [exercise, setExercise] = useState([]);
@@ -331,7 +333,7 @@ const TrainingScreen = () => {
         </>
       )}
 
-      <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
+      <TouchableOpacity ref={addTourRef} style={styles.addButton} onPress={openAddModal}>
         <Text style={styles.addButtonText}>+ Add Exercise</Text>
       </TouchableOpacity>
 
