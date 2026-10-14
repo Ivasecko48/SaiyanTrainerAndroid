@@ -2,7 +2,7 @@
   "expo": {
     "name": "SaiyanTrainer",
     "slug": "SaiyanTrainer",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/vegeta_icon.png",
     "scheme": "saiyantrainer",
@@ -15,7 +15,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#fc7138"
       },
-      "package": "com.marinko369.SaiyanTrainer"
+      "package": "com.marinko369.SaiyanTrainer",
+      "versionCode": 2
     },
     "web": {
       "bundler": "metro",
@@ -33,7 +34,8 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      "./plugins/withReleaseSigning"
     ],
     "experiments": {
       "typedRoutes": true
