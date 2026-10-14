@@ -10,11 +10,18 @@ projekte). Sada ima svoj ključ:
   (SAIYAN_UPLOAD_STORE_FILE, ..._KEY_ALIAS, ..._STORE_PASSWORD, ..._KEY_PASSWORD)
 Obje datoteke su IZVAN projekta i nisu u gitu.
 
-VAŽNO: obje datoteke spremi na sigurno (USB, Google Drive, upravitelj
-lozinki). Svaka nova verzija aplikacije mora biti potpisana ISTIM ključem.
+VAŽNO: obje datoteke samo KOPIRAJ (desni klik -> Kopiraj, pa zalijepi na
+USB ili Google Drive). Nikad ih ne otvaraj u editoru i ništa u njih ne
+upisuj: ključ je binarna datoteka i editor ga pri spremanju pokvari (prvi
+ključ se tako pokvario, pa je napravljen novi). Zato su obje datoteke samo
+za čitanje, a u istoj mapi su i kopije (*.kopija).
+Svaka nova verzija aplikacije mora biti potpisana ISTIM ključem.
 Bez njega se nova verzija ne može instalirati preko stare, pa bi je svi
 morali deinstalirati i izgubili bi svoje vlastite vježbe i namirnice
 (one su spremljene samo na mobitelu).
+
+Appwrite API ključ (standard_...) je nešto drugo: on ne ide u te datoteke.
+Nakon postavljanja dozvola više ne treba, pa ga obriši u Appwrite konzoli.
 
 plugins/withReleaseSigning.js (Expo config plugin) kod svakog prebuilda
 upiše potpisivanje u android/app/build.gradle. Ako ključa nema (npr. drugo
