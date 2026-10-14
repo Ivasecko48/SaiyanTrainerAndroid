@@ -1,4 +1,4 @@
-import { Client, Users, Databases, Query } from 'node-appwrite';
+import { Client, Users, Databases, Account, Query } from 'node-appwrite';
 
 // Appwrite Function za prijavu korisničkim imenom i pretragu drugih Saiyana.
 // Username se sprema kao "name" Appwrite korisnika (mala slova, 3-20 znakova).
@@ -8,13 +8,20 @@ import { Client, Users, Databases, Query } from 'node-appwrite';
 //   { "action": "lookup", "username": "goku" }  -> { "email": "..." } ili 404
 //   { "action": "search", "query": "go" }       -> { "users": [{ id, username, avatar }] }
 //   { "action": "stats",  "userId": "..." }     -> { user: {...}, week: {...}, totalWorkouts }
+//   { "action": "reset-check", "identifier": "email ili username" } -> { userId, email } ili 404
+//   { "action": "set-password", "jwt": "...", "password": "..." }   -> { ok: true }
 //
 // Pretraga i statistika vraćaju samo javne podatke (username, avatar, razina aktivnosti,
 // zbirna statistika). Korisnici s prefs.searchHidden = true ne pojavljuju se.
 //
+// Zaboravljena lozinka: aplikacija preko reset-check nađe račun i pošalje kod na email,
+// korisnik se prijavi tim kodom (dokaz da je email njegov), pa set-password uz JWT te
+// prijave postavi novu lozinku. Bez valjane prijave (JWT) lozinka se ne može promijeniti.
+//
 // Postavke funkcije u Appwrite konzoli:
 //   - Execute access: Any (poziva se i prije prijave)
-//   - Scopes: users.read + documents.read (listDocuments; samo rows.read nije dovoljan)
+//   - Scopes: users.read + users.write (nova lozinka) + documents.read
+//     (listDocuments; samo rows.read nije dovoljan)
 //   - Varijable: SAIYAN_DB_ID i SAIYAN_COL_EXERCISES_ID (ID baze i kolekcije vježbi)
 
 const USERNAME = /^[a-z0-9_.]{3,20}$/;
@@ -147,6 +154,45 @@ export default async ({ req, res, error }) => {
         },
         totalWorkouts: new Set(exercises.map((ex) => dayKey(ex.createdAt))).size,
       });
+    }
+
+    if (body.action === 'reset-check') {
+      const identifier = String(body.identifier || '').trim().toLowerCase();
+      const query = identifier.includes('@')
+        ? Query.equal('email', identifier)
+        : USERNAME.test(identifier)
+          ? Query.equal('name', identifier)
+          : null;
+      const found = query ? await users.list({ queries: [query, Query.limit(2)] }) : { total: 0 };
+      if (found.total !== 1) {
+        return res.json({ error: 'Račun s tim emailom ili Saiyan nameom ne postoji' }, 404);
+      }
+      return res.json({ userId: found.users[0].$id, email: found.users[0].email });
+    }
+
+    if (body.action === 'set-password') {
+      const password = String(body.password || '');
+      if (password.length < 8 || password.length > 256) {
+        return res.json({ error: 'Lozinka mora imati barem 8 znakova' }, 400);
+      }
+      // tko je prijavljen: samo onaj tko ima valjanu prijavu (JWT) mijenja svoju lozinku
+      const session = new Client()
+        .setEndpoint(process.env.APPWRITE_FUNCTION_API_ENDPOINT)
+        .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
+        .setJWT(String(body.jwt || ''));
+      let me;
+      try {
+        me = await new Account(session).get();
+      } catch {
+        return res.json({ error: 'Prijava je istekla. Pošalji novi kod.' }, 401);
+      }
+      try {
+        await users.updatePassword({ userId: me.$id, password });
+      } catch (err) {
+        error(`set-password nije uspio: ${err.message}`);
+        return res.json({ error: 'Lozinka nije spremljena. Funkciji treba scope users.write.' }, 500);
+      }
+      return res.json({ ok: true });
     }
   } catch (err) {
     error(`${body.action} nije uspio: ${err.message}`);

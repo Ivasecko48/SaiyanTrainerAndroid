@@ -58,7 +58,8 @@ const DAY = {
 };
 
 const AuthScreen = () => {
-  const { login, register, verifyEmailCode, resendEmailCode } = useAuth();
+  const { login, register, verifyEmailCode, resendEmailCode, startPasswordReset, finishPasswordReset } =
+    useAuth();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   // Kod prijave: email ili Saiyan name; kod registracije: email
@@ -74,6 +75,10 @@ const AuthScreen = () => {
   const [code, setCode] = useState('');
   const [cooldown, setCooldown] = useState(0);
   const [info, setInfo] = useState(false);
+  // Zaboravljena lozinka: obrazac za email/Saiyan name, pa kod i nova lozinka
+  const [resetting, setResetting] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNew, setConfirmNew] = useState('');
   // Pozadina registracije lagano prekrije pozadinu prijave
   const arena = useRef(new Animated.Value(0)).current;
 
@@ -189,14 +194,96 @@ const AuthScreen = () => {
     setCooldown(RESEND_SECONDS);
   };
 
+  // Zaboravljena lozinka, 1. korak: pošalji kod na email računa
+  const handleResetStart = async () => {
+    if (!email.trim()) {
+      setError('Upiši email ili Saiyan name');
+      return;
+    }
+
+    setError(false);
+    setBusy(true);
+    const response = await startPasswordReset(email);
+    setBusy(false);
+
+    if (response?.error) {
+      setError(response.error);
+      return;
+    }
+
+    setPending({ userId: response.userId, email: response.email, sent: true, reset: true });
+    setCode('');
+    setNewPassword('');
+    setConfirmNew('');
+    setInfo(false);
+    setCooldown(RESEND_SECONDS);
+  };
+
+  // 2. korak: kod iz maila + nova lozinka
+  const handleResetFinish = async () => {
+    if (code.length !== CODE_LENGTH) {
+      setError(`Upiši svih ${CODE_LENGTH} znamenki`);
+      return;
+    }
+    if (!isStrongPassword(newPassword)) {
+      setError('Nova lozinka ne ispunjava sva pravila');
+      return;
+    }
+    if (newPassword !== confirmNew) {
+      setError('Lozinke se ne podudaraju');
+      return;
+    }
+
+    setError(false);
+    setInfo(false);
+    setBusy(true);
+    const response = await finishPasswordReset(pending.userId, code, newPassword);
+    setBusy(false);
+
+    if (response?.error) {
+      setError(response.error);
+      return;
+    }
+    if (response?.passwordError) {
+      Alert.alert(
+        'Lozinka nije promijenjena',
+        `${response.passwordError}\n\nPrijavljen si kodom iz maila; lozinku možeš ponovno promijeniti preko "Zaboravljena lozinka".`
+      );
+    }
+
+    router.replace('../(screens)/trainingScreen');
+  };
+
   // Račun ostaje nepotvrđen; kod sljedeće prijave aplikacija opet pošalje kod
   const handleBack = () => {
     setPending(null);
     setCode('');
+    setNewPassword('');
+    setConfirmNew('');
     setError(false);
     setInfo(false);
+    setResetting(false);
     setIsRegistering(false);
   };
+
+  const openReset = () => {
+    setError(false);
+    setResetting(true);
+  };
+
+  // Popis pravila lozinke (zeleno kad je ispunjeno)
+  const passwordRules = (value) => (
+    <View style={styles.rules}>
+      {checkPassword(value).map((rule) => (
+        <Text
+          key={rule.id}
+          style={[styles.rule, { color: rule.ok ? theme.ruleOk : theme.hint }, rule.ok && styles.ruleOk]}
+        >
+          {rule.ok ? '✓' : '•'} {rule.label}
+        </Text>
+      ))}
+    </View>
+  );
 
   const messages = (
     <>
@@ -217,7 +304,9 @@ const AuthScreen = () => {
 
   const codeStep = pending && (
     <>
-      <Text style={[styles.title, { color: theme.title }]}>Potvrdi email</Text>
+      <Text style={[styles.title, { color: theme.title }]}>
+        {pending.reset ? 'Nova lozinka' : 'Potvrdi email'}
+      </Text>
       <Text style={[styles.subtitle, { color: theme.text }]}>
         {pending.sent ? 'Poslali smo' : 'Šaljemo'} kod od {CODE_LENGTH} znamenki na{'\n'}
         <Text style={[styles.codeEmail, { color: theme.title }]}>{pending.email}</Text>
@@ -239,7 +328,33 @@ const AuthScreen = () => {
         Kod vrijedi 15 minuta. Ako mail ne stigne, provjeri i spam.
       </Text>
 
-      {button('Potvrdi', handleVerify, code.length !== CODE_LENGTH)}
+      {pending.reset && (
+        <>
+          <TextInput
+            style={inputStyle}
+            placeholder="Nova lozinka"
+            placeholderTextColor={theme.placeholder}
+            value={newPassword}
+            onChangeText={setNewPassword}
+            secureTextEntry
+            textContentType="none"
+          />
+          {passwordRules(newPassword)}
+          <TextInput
+            style={inputStyle}
+            placeholder="Potvrdi novu lozinku"
+            placeholderTextColor={theme.placeholder}
+            value={confirmNew}
+            onChangeText={setConfirmNew}
+            secureTextEntry
+            textContentType="none"
+          />
+        </>
+      )}
+
+      {pending.reset
+        ? button('Spremi lozinku', handleResetFinish, code.length !== CODE_LENGTH)
+        : button('Potvrdi', handleVerify, code.length !== CODE_LENGTH)}
 
       <TouchableOpacity onPress={handleResend} disabled={busy || cooldown > 0}>
         <Text style={[styles.link, { color: cooldown > 0 ? theme.muted : theme.link }]}>
@@ -254,7 +369,35 @@ const AuthScreen = () => {
     </>
   );
 
-  const form = !pending && (
+  const resetForm = !pending && resetting && (
+    <>
+      <Text style={[styles.title, { color: theme.title }]}>Zaboravljena lozinka</Text>
+      <Text style={[styles.subtitle, { color: theme.text }]}>
+        Upiši email ili Saiyan name, a mi ti šaljemo kod za novu lozinku.
+      </Text>
+
+      {messages}
+
+      <TextInput
+        style={inputStyle}
+        placeholder="Email ili Saiyan name"
+        placeholderTextColor={theme.placeholder}
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        autoCorrect={false}
+        keyboardType="email-address"
+      />
+
+      {button('Pošalji kod', handleResetStart)}
+
+      <TouchableOpacity onPress={handleBack} disabled={busy}>
+        <Text style={[styles.backLink, { color: theme.muted }]}>Natrag na prijavu</Text>
+      </TouchableOpacity>
+    </>
+  );
+
+  const form = !pending && !resetting && (
     <>
       <Text style={[styles.title, { color: theme.title }]}>
         {isRegistering ? 'Registracija' : 'Prijava'}
@@ -303,18 +446,15 @@ const AuthScreen = () => {
         secureTextEntry
       />
 
+      {!isRegistering && (
+        <TouchableOpacity onPress={openReset} disabled={busy} style={styles.forgot}>
+          <Text style={[styles.forgotText, { color: theme.muted }]}>Zaboravljena lozinka?</Text>
+        </TouchableOpacity>
+      )}
+
       {isRegistering && (
         <>
-          <View style={styles.rules}>
-            {checkPassword(password).map((rule) => (
-              <Text
-                key={rule.id}
-                style={[styles.rule, { color: rule.ok ? theme.ruleOk : theme.hint }, rule.ok && styles.ruleOk]}
-              >
-                {rule.ok ? '✓' : '•'} {rule.label}
-              </Text>
-            ))}
-          </View>
+          {passwordRules(password)}
           <TextInput
             style={inputStyle}
             placeholder="Potvrdi lozinku"
@@ -358,7 +498,7 @@ const AuthScreen = () => {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={[styles.card, theme.card]}>{pending ? codeStep : form}</View>
+          <View style={[styles.card, theme.card]}>{pending ? codeStep : resetting ? resetForm : form}</View>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
@@ -472,6 +612,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  forgot: {
+    alignSelf: 'flex-end',
+    marginTop: -4,
+    marginBottom: 8,
+    paddingVertical: 2,
+  },
+  forgotText: {
+    fontSize: 13,
   },
   backLink: {
     marginTop: 12,

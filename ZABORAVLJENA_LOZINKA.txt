@@ -1,0 +1,52 @@
+SAIYAN TRAINER - ZABORAVLJENA LOZINKA (grana: zaboravljena-lozinka)
+===================================================================
+
+1. Kako radi
+------------
+1. Na ekranu za prijavu: "Zaboravljena lozinka?" (ispod lozinke).
+2. Upiši email ili Saiyan name -> "Pošalji kod".
+3. Na email stiže kod od 6 znamenki (isti kao kod registracije).
+4. Upiši kod, novu lozinku (ista pravila kao kod registracije) i potvrdu
+   -> "Spremi lozinku". Ulaziš u aplikaciju, a od sada se prijavljuješ
+   novom lozinkom.
+
+Radi i za stare račune (napravljene prije potvrde emaila).
+
+Sigurnost: prijava kodom iz maila dokazuje da je email tvoj. Tek tada
+Appwrite funkcija (uz JWT te prijave) postavi novu lozinku. Bez koda iz
+maila nitko ne može promijeniti tuđu lozinku.
+
+
+2. Što trebaš napraviti u Appwrite konzoli (jednom)
+---------------------------------------------------
+Funkcija username-lookup dobila je dvije nove akcije (reset-check i
+set-password), pa je treba ponovno deployati:
+1. Functions -> username-lookup -> Deployments -> Create deployment ->
+   Manual: uploadaj appwrite/functions/username-lookup.tar.gz
+   (već je napravljena; nije u gitu). Entrypoint: src/main.js,
+   Build commands: npm install.
+2. Settings -> Scopes: uz users.read i documents.read označi i
+   "users.write" (potrebno za postavljanje nove lozinke).
+Ako scope nedostaje, aplikacija javi "Lozinka nije spremljena. Funkciji
+treba scope users.write." (korisnik je ipak prijavljen kodom).
+
+Ako ikad promijeniš kod funkcije, arhivu napraviš ovako (iz korijena projekta):
+  tar -czf appwrite/functions/username-lookup.tar.gz -C appwrite/functions/username-lookup package.json src
+
+
+3. Test (Expo Go, nakon deploya funkcije)
+-----------------------------------------
+1. Odjavi se -> "Zaboravljena lozinka?" -> upiši svoj Saiyan name.
+2. Upiši kod iz maila i novu lozinku -> ulaziš u aplikaciju.
+3. Odjavi se i prijavi novom lozinkom.
+4. Nepostojeći email -> "Račun s tim emailom ili Saiyan nameom ne postoji".
+
+
+4. Datoteke
+-----------
+- appwrite/functions/username-lookup/src/main.js - akcije reset-check i set-password
+- services/usernameService.js - resetCheck, setPassword
+- services/authService.js - createJWT
+- contexts/AuthContext.js - startPasswordReset, finishPasswordReset
+- app/auth/index.jsx - "Zaboravljena lozinka?", obrazac i ekran za novu lozinku
+- .gitignore - arhive funkcije (*.tar.gz) nisu u gitu

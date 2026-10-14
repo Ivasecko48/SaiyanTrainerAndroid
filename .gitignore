@@ -40,3 +40,5 @@ yarn-error.*
 app-example
 
 .env
+# arhiva Appwrite funkcije za ručni upload (radi se iz appwrite/functions/username-lookup)
+*.tar.gz

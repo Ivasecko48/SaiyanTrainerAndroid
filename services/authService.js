@@ -84,6 +84,15 @@ const authService = {
     }
   },
 
+  // Kratkotrajni token koji Appwrite funkciji dokazuje tko je prijavljen
+  async createJWT() {
+    try {
+      return await account.createJWT();
+    } catch (error) {
+      return { error: error.message || 'Prijava nije uspjela. Pokušaj ponovno.' };
+    }
+  },
+
   // Pošalji kod od 6 znamenki na email (Appwrite Email OTP). Radi bez prijave.
   async sendEmailCode(userId, email) {
     try {

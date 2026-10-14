@@ -131,7 +131,40 @@ export const AuthProvider = ({ children }) => {
     if (response?.error) {
       return response;
     }
+    return finishCodeLogin();
+  };
 
+  // Zaboravljena lozinka, 1. korak: pronađi račun (email ili Saiyan name) i pošalji kod
+  const startPasswordReset = async (identifier) => {
+    const found = await usernameService.resetCheck(identifier);
+    if (found.error) {
+      return found;
+    }
+    const sent = await authService.sendEmailCode(found.userId, found.email);
+    if (sent?.error) {
+      return sent;
+    }
+    return { needsCode: true, userId: found.userId, email: found.email };
+  };
+
+  // 2. korak: prijava kodom (dokaz da je email tvoj), pa nova lozinka preko Appwrite funkcije.
+  // Ako lozinka ne prođe, korisnik je ipak prijavljen (passwordError).
+  const finishPasswordReset = async (userId, code, password) => {
+    const response = await authService.loginWithCode(userId, code);
+    if (response?.error) {
+      return response;
+    }
+    const jwt = await authService.createJWT();
+    const changed = jwt?.error ? jwt : await usernameService.setPassword(jwt.jwt, password);
+    const done = await finishCodeLogin();
+    if (done.error) {
+      return done;
+    }
+    return changed?.error ? { success: true, passwordError: changed.error } : { success: true };
+  };
+
+  // Zajednički kraj prijave kodom: korisnik u aplikaciju, oznaka za potvrdu emaila više ne treba
+  const finishCodeLogin = async () => {
     let current = await authService.getUser();
     if (!current) {
       return { error: 'Prijava nije uspjela. Pokušaj ponovno.' };
@@ -204,6 +237,8 @@ export const AuthProvider = ({ children }) => {
         register,
         verifyEmailCode,
         resendEmailCode,
+        startPasswordReset,
+        finishPasswordReset,
         setUsername,
         logout,
         updateProfile,

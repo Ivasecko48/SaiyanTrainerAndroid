@@ -62,6 +62,18 @@ const usernameService = {
     const response = await callFunction('stats', { userId });
     return response.error ? response : response.data;
   },
+
+  // Zaboravljena lozinka: račun po emailu ili usernameu -> { userId, email } ili { error }
+  async resetCheck(identifier) {
+    const response = await callFunction('reset-check', { identifier: String(identifier || '').trim() });
+    return response.error ? response : { userId: response.data.userId, email: response.data.email };
+  },
+
+  // Nova lozinka za prijavljenog korisnika (jwt dokazuje tko je prijavljen) -> { ok } ili { error }
+  async setPassword(jwt, password) {
+    const response = await callFunction('set-password', { jwt, password });
+    return response.error ? response : { ok: true };
+  },
 };
 
 export default usernameService;
