@@ -21,6 +21,14 @@ import { parseNumber } from '@/utils/parseNumber';
 import { normalizeMuscles } from '@/utils/muscles';
 import { inRange, withDayHeaders } from '@/utils/dates';
 import { totalVolume, formatVolume } from '@/utils/volume';
+import { buildWeeklyReport } from '@/utils/weeklyReport';
+import WeeklyReportCard from '@/components/WeeklyReportCard';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  loadCatalog,
+  saveCustomExercise,
+  findInCatalog,
+} from '@/services/exerciseCatalog';
 
 const VOLUME_LABELS = {
   day: 'Ukupni volumen dana',
@@ -28,11 +36,9 @@ const VOLUME_LABELS = {
   month: 'Ukupni volumen mjeseca',
   all: 'Ukupni volumen',
 };
-import {
-  loadCatalog,
-  saveCustomExercise,
-  findInCatalog,
-} from '@/services/exerciseCatalog';
+
+// Tjedni izvještaj zatvoren za tjedan (ključ = početak prošlog tjedna), po korisniku
+const reportDismissKey = (userId) => `WEEKLY_REPORT_DISMISSED:${userId}`;
 
 const DEFAULT_SETS = 1;
 const DEFAULT_REPS = 1;
@@ -53,6 +59,9 @@ const TrainingScreen = () => {
   const [weight, setWeight] = useState('');
   // popis poznatih vježbi (biblioteka + vlastite) i mišići trenutne vježbe
   const [catalog, setCatalog] = useState([]);
+  // Za tjedni izvještaj: obroci i tjedan čiji je izvještaj zatvoren
+  const [reportMeals, setReportMeals] = useState([]);
+  const [dismissedWeek, setDismissedWeek] = useState(null);
   const [selectedMuscles, setSelectedMuscles] = useState([]);
   //for editing
   const [editingExercise, setEditingExercise] = useState(null);
@@ -89,6 +98,12 @@ const TrainingScreen = () => {
   useEffect(() => {
     if (user) {
       loadCatalog(user.$id).then(setCatalog);
+
+      // Obroci i zatvoreni izvještaj trebaju samo tjednom izvještaju
+      saiyanService.getMeals(user.$id).then((response) => setReportMeals(response.data || []));
+      AsyncStorage.getItem(reportDismissKey(user.$id))
+        .then(setDismissedWeek)
+        .catch(() => setDismissedWeek(null));
     }
   }, [user?.$id]);
 
@@ -243,7 +258,31 @@ const TrainingScreen = () => {
     ]);
   };
 
-  const renderHeader = () => <TableHeader columns={EXERCISE_COLUMNS} />;
+  // Tjedni izvještaj o prošlom tjednu: proteini, netrenirani mišići i intenzitet (RPE)
+  const report = useMemo(
+    () =>
+      buildWeeklyReport({
+        exercises: exercise,
+        meals: reportMeals,
+        profile: user?.prefs?.profile,
+        lookupByName: (name) => findInCatalog(catalog, name)?.muscles,
+      }),
+    [exercise, reportMeals, user?.prefs?.profile, catalog]
+  );
+  const showReport = Boolean(report) && dismissedWeek !== report.weekKey;
+
+  // Zatvoreni izvještaj se ne prikazuje do idućeg tjedna
+  const dismissReport = () => {
+    setDismissedWeek(report.weekKey);
+    AsyncStorage.setItem(reportDismissKey(user.$id), report.weekKey).catch(() => {});
+  };
+
+  const renderHeader = () => (
+    <>
+      {showReport && <WeeklyReportCard report={report} onDismiss={dismissReport} />}
+      <TableHeader columns={EXERCISE_COLUMNS} />
+    </>
+  );
 
   // Na dnu tablice: ukupni volumen prikazanog dana / tjedna / mjeseca
   const renderFooter = () =>

@@ -1,0 +1,36 @@
+SAIYAN TRAINER - TJEDNI IZVJEŠTAJ (grana: tjedni-izvjestaj)
+===========================================================
+
+Besplatno i bez AI-a: pravila nad tvojim obrocima, vježbama i ciljevima iz
+profila. Sve se računa na mobitelu.
+
+1. Kada i gdje
+--------------
+- Na vrhu "Strong Boy" tablice je kartica s izvještajem o PROŠLOM tjednu
+  (pon - ned).
+- Vrijedi tijekom tekućeg tjedna; idući ponedjeljak je zamijeni izvještaj o
+  novom prošlom tjednu, pa se poruke ne gomilaju.
+- X zatvara karticu do idućeg tjedna (pamti se na uređaju, po korisniku).
+- Novi korisnik (nema podataka prije ovog tjedna) ne dobiva izvještaj.
+- Zelena kartica kad je sve u redu, narančasta kad ima posla.
+
+
+2. Što provjerava (utils/weeklyReport.js)
+-----------------------------------------
+1. Proteini: prosjek proteina po danu (dani s unesenim obrocima) prema cilju
+   iz profila. Ispod 90% cilja -> koliko fali i prijedlog, npr.
+   "1 mjerica whey proteina" ili "150 g pilećih prsa".
+   Bez profila ili bez obroka -> samo napomena.
+2. Mišići: koje mišićne skupine prošli tjedan nisu trenirane (crveno), uz
+   prijedlog da se koristi "Generiraj trening". Bez treninga -> motivacija.
+3. Ako je sve u redu, intenzitet prema prosječnom RPE-u:
+   - ispod 7: prelagano -> više kilaže (do 3 vježbe: +2,5 kg, ispod 40 kg +1 kg)
+   - 7 do 9: savršeno -> malo više gdje ide lako
+   - 9 i više: na rubu -> smanji kilažu 5-10% ili lakši tjedan (do 3 vježbe: -10%)
+
+
+3. Datoteke
+-----------
+- utils/weeklyReport.js (novo) - pravila izvještaja
+- components/WeeklyReportCard.jsx (novo) - kartica
+- app/(screens)/trainingScreen.jsx - prikaz na vrhu tablice, zatvaranje (X)
