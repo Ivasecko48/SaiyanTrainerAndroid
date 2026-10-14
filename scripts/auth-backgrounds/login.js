@@ -13,7 +13,10 @@ const { W, H, SS, w, h, R, G, B, clamp, mix, smooth, hex, forBox, forAll, paint,
 
 const PROJECT = path.resolve(__dirname, '../..');
 const OUT = path.join(PROJECT, 'assets/images/auth');
-const SOURCE = path.join(__dirname, 'shenron_source.png');
+// izvorna slika (originalna rezolucija iz Nano Banane), .jpg ili .png
+const SOURCE = ['shenron_source.jpg', 'shenron_source.png']
+  .map((name) => path.join(__dirname, name))
+  .find((file) => fs.existsSync(file));
 const PREVIEW = process.argv.includes('--preview') ? fs.mkdtempSync(path.join(os.tmpdir(), 'auth-bg-')) : null;
 
 // Svi redovi izvorne slike ispod (FOREST, granice vrtloga) su u jedinicama slike širine 474 px;
@@ -452,7 +455,11 @@ async function main() {
   const src = await loadSource();
   const rowColor = skyRows(src);
   const bw = Math.round(REF_W * K * SS);
-  const big = sharpen(resize(src, bw, Math.round((bw * src.h) / src.w)));
+  // izoštravanje samo kad se mala slika povećava (velika se smanjuje i ostaje oštra)
+  const upscale = (REF_W * K) / src.w;
+  const resized = resize(src, bw, Math.round((bw * src.h) / src.w));
+  const big = upscale > 1.05 ? sharpen(resized, 1.6, Math.min(0.55, (upscale - 1) * 0.5)) : resized;
+  console.log(`izvor ${src.w} x ${src.h}, ${upscale > 1 ? 'povećanje' : 'smanjenje'} ${upscale.toFixed(2)}x`);
   sky(rowColor);
   stars();
   landscape();

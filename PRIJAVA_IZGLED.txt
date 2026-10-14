@@ -33,17 +33,16 @@ Obrazac se može i skrolati.
 
 2. Slike
 --------
-- assets/images/auth/login_shenron.jpg (prijava, 470 KB)
+- assets/images/auth/login_shenron.jpg (prijava, 547 KB)
 - assets/images/auth/signup_arena.jpg (registracija, 473 KB)
 Obje su 1080 x 2340 i prilagode se ekranu. Izvor su skripte u
 scripts/auth-backgrounds/ (nisu dio aplikacije, ne ulaze u APK):
-- login.js složi pozadinu prijave iz shenron_source.png (slika iz Nano
+- login.js složi pozadinu prijave iz shenron_source.jpg (originalna slika iz Nano
   Banane): malo je smanji, rubove rastegne do ruba ekrana, gore docrta nebo
   istih boja, a šumu zamijeni planinama i tlom.
     node scripts/auth-backgrounds/login.js
-  Ako imaš veću (originalnu) verziju slike, samo zamijeni shenron_source.png
-  i ponovo pokreni skriptu: rezultat će biti oštriji (sada je izvor 474 px
-  širok, pa se slika povećava skoro 2x).
+  Izvor je originalna slika (1408 x 3040), pa se smanjuje i ostaje oštra.
+  Za drugu sliku zamijeni shenron_source.jpg i ponovo pokreni skriptu.
 - arena.js nacrta pozadinu registracije (originalni crtež kodom).
     node scripts/auth-backgrounds/arena.js
 
