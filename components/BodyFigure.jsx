@@ -4,13 +4,16 @@ import { CANVAS, LAYERS } from './bodyLayers';
 
 const NEUTRAL_FILL = '#fff';
 const FLIP_MS = 150;
+// Platno počinje iznad tijela (kosa ide iznad glave), pa su koordinate pomaknute
+const ORIGIN_X = CANVAS.left ?? 0;
+const ORIGIN_Y = CANVAS.top ?? 0;
 
 /**
  * Jedno tijelo koje se dodirom okreće: prednja strana <-> stražnja strana.
  *
  * - `side`    'front' ili 'back' (stanje drži roditelj)
- * - `onPress` poziva se na dodir s { x, y } u jedinicama platna (0..200, 0..420),
- *              ili s null ako je dodir izvan slike
+ * - `onPress` poziva se na dodir s { x, y } u jedinicama tijela (0..200, 0..420; kosa je
+ *              iznad, y < 0), ili s null ako je dodir izvan slike
  * - `colors`  objekt { ključ_mišića: boja }, mišići bez boje ostaju bijeli
  *
  * Tijelo je složeno od PNG slojeva (components/bodyLayers.js). Sloj ispune svake
@@ -53,14 +56,18 @@ const BodyFigure = ({ colors = {}, side = 'front', onPress, style }) => {
       return;
     }
 
-    // slika je centrirana u Pressable-u; preračunaj dodir u jedinice platna
+    // slika je centrirana u Pressable-u; preračunaj dodir u jedinice tijela
     const { locationX, locationY } = event.nativeEvent;
     const left = (size.width - CANVAS.width * scale) / 2;
     const top = (size.height - CANVAS.height * scale) / 2;
-    const x = (locationX - left) / scale;
-    const y = (locationY - top) / scale;
+    const x = (locationX - left) / scale + ORIGIN_X;
+    const y = (locationY - top) / scale + ORIGIN_Y;
 
-    const insideFigure = x >= 0 && x <= CANVAS.width && y >= 0 && y <= CANVAS.height;
+    const insideFigure =
+      x >= ORIGIN_X &&
+      x <= ORIGIN_X + CANVAS.width &&
+      y >= ORIGIN_Y &&
+      y <= ORIGIN_Y + CANVAS.height;
     onPress(insideFigure ? { x, y } : null);
   };
 
@@ -95,8 +102,8 @@ const BodyFigure = ({ colors = {}, side = 'front', onPress, style }) => {
                 style={[
                   {
                     position: 'absolute',
-                    left: x * scale,
-                    top: y * scale,
+                    left: (x - ORIGIN_X) * scale,
+                    top: (y - ORIGIN_Y) * scale,
                     width: w * scale,
                     height: h * scale,
                   },

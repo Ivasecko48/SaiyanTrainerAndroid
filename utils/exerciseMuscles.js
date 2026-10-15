@@ -38,10 +38,10 @@ const MAP = {
   'face pull': ['rear_delts', 'upper_back'],
 
   // Noge
-  squat: ['quads', 'glutes'],
+  squat: ['quads', 'glutes', 'hips'],
   'front squat': ['quads', 'glutes'],
-  'bulgarian split squat': ['quads', 'glutes'],
-  lunge: ['quads', 'glutes'],
+  'bulgarian split squat': ['quads', 'glutes', 'hips'],
+  lunge: ['quads', 'glutes', 'hips'],
   'step-up': ['quads', 'glutes'],
   'romanian deadlift': ['hamstrings', 'glutes', 'lower_back'],
   'leg curl': ['hamstrings'],
@@ -65,15 +65,15 @@ const MAP = {
 
   // Trbuh
   crunch: ['abs'],
-  'sit-up': ['abs'],
+  'sit-up': ['abs', 'hips'],
   plank: ['abs'],
-  'side plank': ['obliques'],
-  'leg raise': ['abs'],
-  'flutter kicks': ['abs'],
+  'side plank': ['obliques', 'hips'],
+  'leg raise': ['abs', 'hips'],
+  'flutter kicks': ['abs', 'hips'],
   'russian twist': ['obliques', 'abs'],
   'bicycle crunch': ['abs', 'obliques'],
-  'mountain climbers': ['abs', 'quads'],
-  'hanging leg raise': ['abs'],
+  'mountain climbers': ['abs', 'quads', 'hips'],
+  'hanging leg raise': ['abs', 'hips'],
 };
 
 // Sirova procjena za stare vlastite vježbe koje su imale samo grubu skupinu (Chest, Back...)

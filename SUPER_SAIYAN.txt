@@ -46,18 +46,19 @@ značajka ne radi.
   i zamućeni rubovi slike. Generira je skripta (ako zamijeniš sliku Vegete,
   pokreni je ponovno):
       node scripts/super-saiyan-bg.js
-- assets/body/front_groin_fill.png: novi sloj figure. Napravljen je iz
-  neutral_front.png i obruba (bijelo područje prepona, u 3x rezoluciji kao i
-  ostali slojevi), a boji se preko tintColor kao mišići. Ručno je dodan u
-  components/bodyLayers.js. Dodir na njega prepoznaje hitTestGroin u
-  utils/bodyHitTest.js.
+- assets/body/front_groin_fill.png i front_groin_line.png: azurne prepone
+  (spolovilo). Oblik GROIN iz components/bodyPaths.js je mali dio na dnu
+  zdjelice, a ostatak zdjelice su kukovi (mišić "Kukovi"). Slojeve generira
+  scripts/body-figure.js zajedno s ostalim slojevima tijela; azurna boja ide
+  preko tintColor kao kod mišića. Dodir na prepone prepoznaje hitTestGroin u
+  utils/bodyHitTest.js (prije mišića), po istom obliku.
 
 
 5. Kako maknuti šalu (kad stigne prava verzija 2)
 -------------------------------------------------
-Izbrisati components/SuperSaiyanModal.jsx i njegove uvoze na tri ekrana, sloj
-front_groin_fill (redak u bodyLayers.js i PNG), hitTestGroin te result.groin u
-muscleScreen.jsx.
+Izbrisati components/SuperSaiyanModal.jsx i njegove uvoze na tri ekrana,
+hitTestGroin, result.groin u muscleScreen.jsx i dio za prepone u
+scripts/body-figure.js (pa ponovno pokrenuti skriptu).
 
 
 6. Datoteke

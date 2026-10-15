@@ -1,4 +1,4 @@
-// 17 mišićnih skupina. `key` se sprema u bazu uz svaku vježbu, `label` se prikazuje u aplikaciji.
+// 18 mišićnih skupina. `key` se sprema u bazu uz svaku vježbu, `label` se prikazuje u aplikaciji.
 // Isti ključevi koriste se i za bojanje tijela u components/bodyPaths.js.
 export const MUSCLES = [
   { key: 'chest', label: 'Prsa' },
@@ -15,6 +15,7 @@ export const MUSCLES = [
   { key: 'abs', label: 'Trbušni' },
   { key: 'obliques', label: 'Kosi trbušni' },
   { key: 'glutes', label: 'Gluteusi' },
+  { key: 'hips', label: 'Kukovi' }, // pregibači i aduktori kuka
   { key: 'quads', label: 'Kvadricepsi' },
   { key: 'hamstrings', label: 'Zadnja loža' },
   { key: 'calves', label: 'Listovi' },

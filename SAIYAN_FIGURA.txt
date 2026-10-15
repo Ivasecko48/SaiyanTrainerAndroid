@@ -1,0 +1,70 @@
+SAIYAN TRAINER - SAIYANSKA FIGURA NA MUSCLE GROUPS (grana: saiyan-figura)
+=========================================================================
+
+1. Što je novo
+--------------
+Tijelo na tabu Muscle Groups izgleda kao Saiyan (u stilu Toriyame).
+- Mišići sprijeda: delte kao kugle, trapezi koji rastu uz vrat, velika
+  četvrtasta prsa, uzak struk (V-oblik), šest kockica, nazubljeni serratus
+  sa strane rebara, veliki bicepsi i podlaktice, kukovi s V-linijom, masivna
+  bedra s "kapljicom" iznad koljena, listovi u obliku dijamanta.
+- Mišići straga: veliki trapezi, široki latovi u V, stupovi uz kralježnicu,
+  potkova tricepsa, okrugli gluteusi, stražnja loža s razdvajanjem, listovi
+  s dvije glave.
+- Veća glava i Super Saiyan kosa kao kod Gokua (SSJ1): oštri šiljci poput
+  plamena, okrenuti gore i počešljani udesno, s linijama pramenova, četiri
+  pramena na čelu (najduži u sredini) i pramenovi uz lice. Straga je zrcalna
+  slika istih šiljaka, a cijeli zatiljak je kosa s kratkim šiljcima na
+  vratu. Kosa ne prekriva nijedan mišić.
+- Mišići se dodiruju bez bijelih procijepa (trbušnjaci idu ispod prsa, delte
+  preko prsa i bicepsa, donji dio leđa ispod latova...).
+- Bojanje (crveno / žuto / zeleno), dodir na mišić i okretanje rade isto.
+  Dodir na kosu okreće tijelo kao dodir na prazno mjesto.
+
+
+2. Kukovi (nova mišićna skupina)
+--------------------------------
+- Zdjelica sprijeda je sada mišić "Kukovi" (pregibači i aduktori kuka): boji
+  se po treninzima kao i ostali mišići i ima svoj popis vježbi.
+- Azurni dio (spolovilo) ostao je, manji, u sredini na dnu zdjelice, i dalje
+  otvara Super Saiyan zafrkanciju.
+- "Kukovi" su 18. mišićna skupina (utils/muscles.js): pojavljuju se u popisu
+  na Muscle Groups, u odabiru mišića kod dodavanja vježbe, u generatoru
+  treninga i u tjednom izvještaju.
+- Vježbe iz popisa koje rade kukove (utils/exerciseMuscles.js): čučanj,
+  bugarski čučanj, iskorak, sit-up, bočni plank, podizanje nogu, viseće
+  podizanje nogu, flutter kicks, mountain climbers.
+- Vježbe spremljene prije ove promjene nemaju kukove; ako želiš da se
+  računaju, otvori vježbu i dodaj "Kukovi".
+- Appwrite: polje muscles u kolekciji vježbi trebalo bi biti obični niz
+  tekstova, pa "hips" radi bez ikakve promjene. Ako spremanje vježbe s
+  "Kukovi" javi grešku, polje je enum: u konzoli (Databases -> baza ->
+  kolekcija vježbi -> Attributes -> muscles) dodaj vrijednost hips.
+
+
+3. Kako je napravljeno
+----------------------
+- components/bodyPaths.js: vektorski oblici (desna polovica, lijeva je
+  zrcalna). Redoslijed mišića je redoslijed crtanja; dodir poštuje isti
+  redoslijed (gornji mišić "pobjeđuje"). Kosa je zadana točkama (udubina,
+  vrh, udubina...), a funkcija curved() od njih složi glatke šiljke; vrhovi
+  su označeni da ostanu oštri. Sprijeda je kosa iza glave plus kapa sa
+  šiškama preko čela (kapa bez obruba, pa se spoj ne vidi); straga je cijela
+  kosa preko glave.
+- scripts/body-figure.js: generator. Iz bodyPaths.js iscrta sve PNG slojeve
+  (assets/body, 3x rezolucija) i napiše components/bodyLayers.js. Kosa ide
+  iznad tijela, pa platno počinje na y = -64 (CANVAS.top), a
+  components/BodyFigure.jsx pomiče slojeve i dodir za taj pomak.
+- Za promjenu oblika: uredi bodyPaths.js pa pokreni
+      node scripts/body-figure.js --preview   (samo pregled u privremenoj mapi)
+      node scripts/body-figure.js             (slojevi + bodyLayers.js)
+
+
+4. Datoteke
+-----------
+- components/bodyPaths.js - Saiyanski mišići, glava, kosa, kukovi i prepone
+- scripts/body-figure.js - generator slojeva
+- assets/body/*.png, components/bodyLayers.js - generirani slojevi
+- components/BodyFigure.jsx - pomak platna zbog kose
+- utils/bodyHitTest.js - azurne prepone po obliku GROIN
+- utils/muscles.js, utils/exerciseMuscles.js - mišićna skupina "Kukovi"

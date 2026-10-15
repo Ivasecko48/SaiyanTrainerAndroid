@@ -1,4 +1,4 @@
-import { FIGURES, FIGURE_WIDTH } from '../components/bodyPaths';
+import { FIGURES, FIGURE_WIDTH, GROIN } from '../components/bodyPaths';
 
 const CURVE_STEPS = 12; // koliko točaka uzorkujemo po Bezierovoj krivulji
 const TOLERANCE = 3; // koliko jedinica "mimo" oblika još računamo kao pogodak
@@ -81,15 +81,19 @@ const hitExact = (shapes, x, y) => {
   return null;
 };
 
-// Područje prepona na prednjoj strani (nije mišić), u jedinicama platna.
-// Prati sloj front_groin_fill iz bodyLayers.js.
-const GROIN = [
-  [63, 178], [137, 178], [138.5, 190], [135, 206], [118, 214],
-  [100, 227], [82, 214], [65, 206], [61.5, 190],
-];
+// Područje prepona na prednjoj strani (nije mišić): isti oblik kao zdjelica u
+// bodyPaths.js i sloj front_groin_fill
+let groinPolygon = null;
 
 // Je li dodir na azurnim preponama? (otvara Super Saiyan zafrkanciju)
-export const hitTestGroin = (view, x, y) => view === 'front' && inside(GROIN, x, y);
+export const hitTestGroin = (view, x, y) => {
+  if (view !== 'front') return false;
+  groinPolygon = groinPolygon || toPolygon(GROIN);
+  // desna polovica; lijevu testiramo zrcalno preko sredine. Putanja počinje na x = 101,
+  // pa dodir točno na središnjoj liniji pomaknemo malo udesno.
+  const px = Math.max(101.5, x > FIGURE_WIDTH / 2 ? x : FIGURE_WIDTH - x);
+  return inside(groinPolygon, px, y);
+};
 
 /**
  * Koja mišićna skupina je na zadanoj točki?
