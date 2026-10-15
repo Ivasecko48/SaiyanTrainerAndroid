@@ -35,6 +35,13 @@
         }
       ],
       "expo-sharing",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Scouter treba kameru za skeniranje barkoda.",
+          "recordAudioAndroid": false
+        }
+      ],
       "./plugins/withReleaseSigning"
     ],
     "experiments": {

@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDate } from '@/contexts/DateContext';
 import MealRender from '@/components/MealRender';
@@ -16,6 +17,7 @@ import TableHeader from '@/components/TableHeader';
 import DayHeader, { RangeLabel } from '@/components/DayHeader';
 import { MEAL_COLUMNS } from '@/components/tableStyles';
 import AddMealModal from '@/components/AddMealModal';
+import BarcodeScannerModal from '@/components/BarcodeScannerModal';
 import ShareDayModal from '@/components/ShareDayModal';
 import { useTourTarget } from '@/contexts/TourContext';
 import saiyanService from '@/services/saiyanService';
@@ -30,6 +32,9 @@ import { dateKey, todayKey, inRange, withDayHeaders, daysInRange } from '@/utils
 import { calcTargets, calorieStatus, proteinStatus } from '@/utils/nutrition';
 
 const round1 = (n) => Math.round(n * 10) / 10;
+
+// Vrijednost za input; nepoznata vrijednost (null) je prazno polje
+const asText = (value) => (value === null || value === undefined ? '' : String(value));
 
 const sumMeals = (list) =>
   list.reduce(
@@ -62,6 +67,10 @@ const MealsScreen = () => {
   // Namirnica odabrana iz prijedloga, iz nje se računaju kalorije i proteini
   const [selectedFood, setSelectedFood] = useState(null);
   const [foodCatalog, setFoodCatalog] = useState([]);
+  // Skener barkoda (Vegetin scouter) i rezultat zadnjeg skeniranja:
+  // { barcode, source: 'off' | 'local' | 'missing' } dok je forma otvorena iz skenera
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scan, setScan] = useState(null);
   //for editing
   const [editingMeal, setEditingMeal] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -152,6 +161,7 @@ const MealsScreen = () => {
     setCarbs('');
     setGrams('');
     setSelectedFood(null);
+    setScan(null);
   };
 
   // Upisuje kalorije i proteine za odabranu namirnicu i količinu
@@ -159,10 +169,10 @@ const MealsScreen = () => {
     const amount = parseNumber(gramsText, NaN);
     if (!food || !(amount > 0)) return;
     const scaled = scaleFood(food, amount);
-    setCalories(String(scaled.calories));
-    setProtein(String(scaled.protein));
-    setFat(scaled.fat === null ? '' : String(scaled.fat));
-    setCarbs(scaled.carbs === null ? '' : String(scaled.carbs));
+    setCalories(asText(scaled.calories));
+    setProtein(asText(scaled.protein));
+    setFat(asText(scaled.fat));
+    setCarbs(asText(scaled.carbs));
   };
 
   const handleSelectFood = (food) => {
@@ -177,16 +187,30 @@ const MealsScreen = () => {
     applyFood(selectedFood, text);
   };
 
-  // Ručno mijenjanje naziva odvaja obrok od odabrane namirnice
+  // Ručno mijenjanje naziva odvaja obrok od odabrane namirnice. Skenirani proizvod
+  // (s barkodom) ostaje povezan, jer je naziv iz baze često na stranom jeziku pa ga
+  // korisnik samo ispravlja.
   const handleNameChange = (text) => {
     setNewMealName(text);
-    if (selectedFood && text !== selectedFood.name) {
+    if (selectedFood && !selectedFood.barcode && text !== selectedFood.name) {
       setSelectedFood(null);
     }
   };
 
   const openAddModal = () => {
     resetForm();
+    setModalVisible(true);
+  };
+
+  // Rezultat scoutera otvara prozor "Add Meal": popunjen podacima proizvoda,
+  // ili prazan kad proizvoda nema u bazi
+  const handleScanned = ({ barcode, food, source }) => {
+    resetForm();
+    if (food) {
+      handleSelectFood(food);
+    }
+    setScan({ barcode, source });
+    setScannerOpen(false);
     setModalVisible(true);
   };
 
@@ -259,13 +283,38 @@ const MealsScreen = () => {
     // Bez upisanih grama vrijednosti se tretiraju kao porcija od 100 g.
     const known = findFood(foodCatalog, newData.mealName);
     if (!known || known.custom) {
+      // Skenirani proizvod pamti točne vrijednosti iz baze (npr. na 100 g), osim ako
+      // ih je korisnik ručno ispravio. Zaokružena porcija bi s vremenom kvarila podatke.
+      const amount = parseNumber(grams, NaN);
+      const fromFood =
+        selectedFood?.barcode && amount > 0 ? scaleFood(selectedFood, amount) : null;
+      const keepFood =
+        fromFood &&
+        fromFood.calories === caloriesValue &&
+        fromFood.protein === proteinValue &&
+        fromFood.fat === fatValue &&
+        fromFood.carbs === carbsValue;
+      const values = keepFood
+        ? selectedFood
+        : {
+            kcal: caloriesValue,
+            protein: proteinValue,
+            fat: fatValue,
+            carbs: carbsValue,
+            grams: parseNumber(grams, 100),
+          };
       await saveCustomFood(user.$id, {
         name: newData.mealName,
-        kcal: caloriesValue,
-        protein: proteinValue,
-        fat: fatValue,
-        carbs: carbsValue,
-        grams: parseNumber(grams, 100),
+        kcal: values.kcal,
+        protein: values.protein,
+        fat: values.fat,
+        carbs: values.carbs,
+        grams: values.grams,
+        // Barkod se pamti i kad proizvoda nema u bazi pa ga je korisnik upisao sam
+        barcode: scan?.barcode ?? selectedFood?.barcode,
+        servingGrams: selectedFood?.servingGrams,
+        packageGrams: selectedFood?.packageGrams,
+        unit: selectedFood?.unit,
       });
       setFoodCatalog(await loadFoodCatalog(user.$id));
     }
@@ -385,10 +434,26 @@ const MealsScreen = () => {
           />
         </>
       )}
-      <TouchableOpacity ref={addTourRef} style={styles.addButton} onPress={openAddModal}>
-        <Text style={styles.addButtonText}>+ Add Meal</Text>
-      </TouchableOpacity>
+      {/* "+ Add Meal" i gumb za skener barkoda; vodič ih pokazuje zajedno */}
+      <View ref={addTourRef} collapsable={false} style={styles.addRow}>
+        <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
+          <Text style={styles.addButtonText}>+ Add Meal</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.scanButton}
+          onPress={() => setScannerOpen(true)}
+          accessibilityLabel="Skeniraj barkod"
+        >
+          <MaterialCommunityIcons name="barcode-scan" size={28} color="#0e0e0e" />
+        </TouchableOpacity>
+      </View>
       {/* Modal */}
+      <BarcodeScannerModal
+        visible={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        catalog={foodCatalog}
+        onResult={handleScanned}
+      />
       <ShareDayModal
         visible={shareOpen}
         onClose={() => setShareOpen(false)}
@@ -407,6 +472,8 @@ const MealsScreen = () => {
         mealName={newMealName}
         setMealName={handleNameChange}
         onSelectFood={handleSelectFood}
+        food={selectedFood}
+        scanSource={scan?.source}
         grams={grams}
         setGrams={handleGramsChange}
         protein={protein}
@@ -433,15 +500,29 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 140, // da zadnji redovi ne završe ispod gumba "+ Add"
   },
-  addButton: {
+  addRow: {
     position: 'absolute',
     bottom: 20, // isto kao "+ Add Exercise" na Strong Boy
     left: 20,
     right: 91, // ostavlja mjesta za ikonu kalendara s desne strane
+    flexDirection: 'row',
+  },
+  addButton: {
+    flex: 1,
     backgroundColor: '#fc7138',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
+    elevation: 3,
+  },
+  // Iste boje i visine kao "+ Add Meal", između njega i kalendara
+  scanButton: {
+    width: 58,
+    marginLeft: 10,
+    backgroundColor: '#fc7138',
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
     elevation: 3,
   },
   addButtonText: {

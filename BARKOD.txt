@@ -1,0 +1,80 @@
+SAIYAN TRAINER - SKENER BARKODA, VEGETIN SCOUTER (grana: barkod-skener)
+======================================================================
+
+1. Što radi
+-----------
+- Na "Big man" je "+ Add Meal" malo kraći, a desno od njega (lijevo od
+  kalendara) je narančasti gumb s ikonom barkoda.
+- Gumb otvara skener preko cijelog ekrana u stilu Vegetinog scoutera: zeleno
+  staklo, okvir za nišanjenje, svjetiljka i X za zatvaranje.
+- Kad scouter očita barkod, izbroji "POWER LEVEL" (kcal na 100 g) i sam otvori
+  prozor "Add Meal" s nazivom, 100 g i izračunatim kalorijama, proteinima,
+  mastima i UH. Promijeniš grame (ili klikneš brzi gumb) i klikneš Save.
+  Dodir na očitanje preskače čekanje.
+- Brzi gumbi za količinu: "100 g", "1 porcija (40 g)" i "Pakiranje (500 g)".
+  Pojave se kad baza zna porciju ili veličinu pakiranja. Pića su u ml.
+- Skenirani proizvod se spremi u "Moje namirnice" zajedno s barkodom. Idući
+  put ga scouter prepozna odmah, bez traženja u bazi.
+- Ako proizvoda nema u bazi, "Upiši ručno" otvori praznu formu. Barkod se
+  zapamti uz ono što upišeš, pa ga scouter idući put prepozna.
+- Naziv iz baze možeš ispraviti (često je na stranom jeziku, npr.
+  "Schokolade"). Proizvod ostaje povezan s barkodom pod novim nazivom.
+- U vodiču (Nimbus) korak "Dodaj obrok" pokazuje oba gumba i spominje scouter.
+
+
+2. Baza proizvoda: Open Food Facts
+----------------------------------
+- Besplatna javna baza, bez ključa i registracije
+  (https://world.openfoodfacts.org). Šalje se samo broj barkoda, ništa o
+  korisniku.
+- Za Hrvatsku ima oko 4.100 proizvoda (listopad 2026.), plus strane brendove
+  koji se prodaju i kod nas (Nutella, Coca-Cola...).
+- Podatke upisuju ljudi, pa naziv zna biti na stranom jeziku ili prazan, a
+  vrijednosti nekad fale. Kad fale kalorije, scouter pokaže "???", a prozor
+  traži da ih upišeš s deklaracije. Uvijek provjeri s deklaracijom.
+- Proizvod koji se zove isto kao namirnica iz ugrađenog popisa (npr.
+  "Nutella", "Coca-Cola") ne sprema se u "Moje namirnice", jer se ugrađeni
+  popis ne mijenja. Takav proizvod scouter svaki put traži u bazi.
+- Bez interneta scouter javi "SCOUTER JE IZGUBIO VEZU". Možeš pokušati opet
+  ili upisati proizvod ručno.
+
+
+3. Kamera i dozvola
+-------------------
+- Paket expo-camera, radi i u Expo Go. Kod prvog otvaranja mobitel pita za
+  dozvolu za kameru. Ako je trajno odbiješ, scouter nudi "Otvori postavke".
+- app.json: plugin expo-camera, samo kamera (bez mikrofona).
+- android/ je ponovno generiran (npx expo prebuild --platform android
+  --no-install). Jedina promjena je dozvola CAMERA u AndroidManifest.xml.
+
+
+4. Testiranje u Expo Go
+-----------------------
+npx expo start --go, pa na "Big man":
+  1. Gumb s barkodom -> dozvoli kameru -> skeniraj proizvod (npr. Nutella).
+  2. Provjeri power level, pa prozor "Add Meal" i brze gumbe za količinu.
+  3. Spremi obrok. Skeniraj proizvod kojeg nema u ugrađenom popisu, spremi
+     ga, pa ga skeniraj opet: piše "Iz tvojih namirnica".
+  4. Skeniraj nešto čega nema u bazi -> "Upiši ručno" -> spremi -> skeniraj
+     opet.
+  5. Svjetiljka radi, a X i tipka "natrag" zatvaraju scouter.
+
+
+5. Novi APK
+-----------
+Za APK s kamerom u app.json digni "version" (npr. 1.2.0) i
+"android.versionCode" (3), ponovno pokreni prebuild i napravi build kao u
+RELEASE_APK.txt. Dodan je novi paket (expo-camera), pa u C:\st prije builda
+treba npm ci.
+
+
+6. Datoteke
+-----------
+- components/BarcodeScannerModal.jsx - scouter (kamera, animacije, očitanje)
+- services/openFoodFacts.js - traženje proizvoda po barkodu
+- services/foodCatalog.js - barkod, porcija i pakiranje u vlastitim namirnicama
+- components/AddMealModal.jsx - brzi gumbi za količinu i poruka iz skenera
+- app/(screens)/mealScreen.jsx - gumb za skener i spremanje barkoda
+- utils/tourSteps.js - tekst koraka "Dodaj obrok"
+- app.json, package.json, package-lock.json,
+  android/app/src/main/AndroidManifest.xml - expo-camera

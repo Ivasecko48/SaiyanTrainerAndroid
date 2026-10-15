@@ -55,19 +55,30 @@ export const loadFoodCatalog = async (userId) => {
       carbs: optional(food.carbs),
       grams: Number(food.grams) > 0 ? Number(food.grams) : 100,
       custom: true,
+      // Skenirani proizvodi pamte barkod, porciju i pakiranje (za brze gumbe)
+      barcode: food.barcode || null,
+      servingGrams: optional(food.servingGrams),
+      packageGrams: optional(food.packageGrams),
+      unit: food.unit || 'g',
     })),
   ];
 };
 
 // Sprema novu vlastitu namirnicu ili ažurira postojeću.
 // `grams` je količina na koju se odnose kcal, protein, masti i UH.
-export const saveCustomFood = async (userId, { name, kcal, protein, fat, carbs, grams }) => {
+// Barkod, porcija i pakiranje ostaju zapamćeni i kad se namirnica kasnije
+// spremi bez njih (npr. upisom naziva umjesto skeniranja).
+export const saveCustomFood = async (
+  userId,
+  { name, kcal, protein, fat, carbs, grams, barcode, servingGrams, packageGrams, unit }
+) => {
   const cleanName = String(name || '').trim();
   if (!userId || !cleanName) return;
   if (libraryNames.has(lower(cleanName))) return; // biblioteka se ne mijenja
 
   const custom = await loadCustom(userId);
   const index = custom.findIndex((food) => lower(food.name) === lower(cleanName));
+  const previous = index >= 0 ? custom[index] : {};
   const entry = {
     name: cleanName,
     kcal: Number(kcal) || 0,
@@ -75,7 +86,18 @@ export const saveCustomFood = async (userId, { name, kcal, protein, fat, carbs, 
     fat: optional(fat),
     carbs: optional(carbs),
     grams: Number(grams) > 0 ? Number(grams) : 100,
+    barcode: barcode || previous.barcode || null,
+    servingGrams: optional(servingGrams ?? previous.servingGrams),
+    packageGrams: optional(packageGrams ?? previous.packageGrams),
+    unit: unit || previous.unit || 'g',
   };
+
+  // Barkod pripada samo jednoj namirnici: zadnjem nazivu pod kojim je spremljen
+  if (entry.barcode) {
+    custom.forEach((food) => {
+      if (food.barcode === entry.barcode) food.barcode = null;
+    });
+  }
 
   if (index >= 0) custom[index] = entry;
   else custom.push(entry);
@@ -93,14 +115,21 @@ export const findFood = (catalog, name) => {
   return (catalog || []).find((food) => lower(food.name) === wanted) || null;
 };
 
+// Vlastita namirnica spremljena s ovim barkodom (proizvod skeniran ranije)
+export const findFoodByBarcode = (catalog, barcode) => {
+  if (!barcode) return null;
+  return (catalog || []).find((food) => food.barcode === barcode) || null;
+};
+
 // Kalorije, proteini, masti i UH za zadanu količinu u gramima, zaokruženo na cijele
-// brojeve. Masti i UH su null ako ih namirnica nema.
+// brojeve. Vrijednost koju namirnica nema (masti i UH starijih namirnica, ili podatak
+// koji fali u bazi proizvoda) je null.
 export const scaleFood = (food, grams) => {
   const factor = grams / food.grams;
   const scale = (value) => (value === null || value === undefined ? null : Math.round(value * factor));
   return {
-    calories: Math.round(food.kcal * factor),
-    protein: Math.round(food.protein * factor),
+    calories: scale(food.kcal),
+    protein: scale(food.protein),
     fat: scale(food.fat),
     carbs: scale(food.carbs),
   };

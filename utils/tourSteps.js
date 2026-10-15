@@ -43,7 +43,7 @@ export const TOUR_STEPS = [
     screen: 'mealScreen',
     target: 'add-meal',
     title: 'Dodaj obrok',
-    text: 'Upiši namirnicu (npr. "riža") i grame: kalorije, proteini, masti i ugljikohidrati izračunaju se sami.',
+    text: 'Upiši namirnicu (npr. "riža") i grame, a kalorije, proteini, masti i UH izračunaju se sami. Gumb s barkodom pali Vegetin scouter: skeniraj proizvod iz dućana.',
   },
   {
     id: 'body',

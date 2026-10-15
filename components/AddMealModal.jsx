@@ -8,7 +8,33 @@ import {
 } from 'react-native';
 import { Modal } from 'react-native';
 import ExerciseAutocompleteInput from './ExerciseAutoInput';
+import NumberChips from './NumberChips';
 import { findFood } from '@/services/foodCatalog';
+import { parseNumber } from '@/utils/parseNumber';
+
+// Poruka na vrhu prozora kad je otvoren iz scoutera (skenera barkoda)
+const SCAN_HINTS = {
+  off: 'Podaci iz baze Open Food Facts. Provjeri ih s deklaracijom.',
+  local: 'Scouter je prepoznao proizvod iz tvojih namirnica.',
+  missing:
+    'Proizvoda nema u bazi. Upiši naziv i vrijednosti s deklaracije, a scouter će ga idući put prepoznati.',
+};
+const NO_CALORIES_HINT = 'Baza nema kalorije za ovaj proizvod. Upiši ih s deklaracije.';
+
+// Brzi gumbi za količinu kad proizvod ima porciju ili pakiranje (skenirani proizvodi)
+const portionOptions = (food) => {
+  if (!food?.servingGrams && !food?.packageGrams) return [];
+  const unit = food.unit || 'g';
+  const options = [{ grams: 100, label: `100 ${unit}` }];
+  const add = (grams, label) => {
+    if (grams && !options.some((option) => option.grams === grams)) {
+      options.push({ grams, label });
+    }
+  };
+  add(food.servingGrams, `1 porcija (${food.servingGrams} ${unit})`);
+  add(food.packageGrams, `Pakiranje (${food.packageGrams} ${unit})`);
+  return options;
+};
 
 const AddMealModal = ({
   modalVisible,
@@ -17,6 +43,8 @@ const AddMealModal = ({
   mealName,
   setMealName,
   onSelectFood,
+  food,
+  scanSource,
   grams,
   setGrams,
   calories,
@@ -32,6 +60,9 @@ const AddMealModal = ({
 }) => {
   const isNewName =
     mealName.trim().length > 0 && !findFood(catalog, mealName);
+  const portions = portionOptions(food);
+  const scanHint =
+    scanSource === 'off' && food?.kcal === null ? NO_CALORIES_HINT : SCAN_HINTS[scanSource];
 
   return (
     <Modal
@@ -52,6 +83,7 @@ const AddMealModal = ({
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
+            {scanHint ? <Text style={styles.scanHint}>{scanHint}</Text> : null}
             <View style={styles.modalSelect}>
               <Text style={styles.label}>Are you even trying to get big?</Text>
             </View>
@@ -80,6 +112,18 @@ const AddMealModal = ({
                 onChangeText={setGrams}
               />
             </View>
+            {portions.length > 0 && (
+              <View style={styles.portions}>
+                <NumberChips
+                  options={portions.map((option) => option.grams)}
+                  value={parseNumber(grams, NaN)}
+                  onChange={(amount) => setGrams(String(amount))}
+                  labelFor={(amount) =>
+                    portions.find((option) => option.grams === amount).label
+                  }
+                />
+              </View>
+            )}
 
             <View style={styles.modalSelect}>
               <Text style={styles.label}>Calories</Text>
@@ -221,6 +265,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#888',
     marginBottom: 8,
+  },
+  scanHint: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: '#7a3a12',
+    backgroundColor: '#fff3ec',
+    borderRadius: 8,
+    padding: 8,
+    marginBottom: 10,
+  },
+  portions: {
+    marginTop: -8,
+    marginBottom: 14,
   },
 });
 
