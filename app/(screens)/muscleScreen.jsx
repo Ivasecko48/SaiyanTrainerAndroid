@@ -15,6 +15,7 @@ import { loadCatalog, findInCatalog } from '@/services/exerciseCatalog';
 import BodyFigure from '@/components/BodyFigure';
 import MuscleExercisesSheet from '@/components/MuscleExercisesSheet';
 import WorkoutPlanSheet from '@/components/WorkoutPlanSheet';
+import SuperSaiyanModal, { SSB_AZURE } from '@/components/SuperSaiyanModal';
 import { generateWorkout } from '@/utils/workoutGenerator';
 import { useTourTarget } from '@/contexts/TourContext';
 import {
@@ -25,7 +26,7 @@ import {
   COLOR_TWICE,
 } from '@/utils/muscles';
 import { computeWeek, exercisesForMuscle } from '@/utils/muscleStats';
-import { hitTestMuscle } from '@/utils/bodyHitTest';
+import { hitTestMuscle, hitTestGroin } from '@/utils/bodyHitTest';
 import { formatShort } from '@/utils/dates';
 
 const MuscleScreen = () => {
@@ -42,6 +43,8 @@ const MuscleScreen = () => {
   // Generirani trening za mišiće koji su ovaj tjedan crveni (i žuti, ako stane)
   const [plan, setPlan] = useState(null);
   const [planOpen, setPlanOpen] = useState(false);
+  // Super Saiyan zafrkancija (verzija 2), otvara se dodirom na azurne prepone
+  const [superSaiyanOpen, setSuperSaiyanOpen] = useState(false);
   const figureTourRef = useTourTarget('body-figure');
   const generateTourRef = useTourTarget('generate');
 
@@ -97,6 +100,8 @@ const MuscleScreen = () => {
     MUSCLES.forEach(({ key }) => {
       result[key] = colorForCount(counts[key]);
     });
+    // Prepone nisu mišić: uvijek su azurne (Super Saiyan zafrkancija)
+    result.groin = SSB_AZURE;
     return result;
   }, [counts]);
 
@@ -122,8 +127,13 @@ const MuscleScreen = () => {
   const flip = () =>
     setSide((current) => (current === 'front' ? 'back' : 'front'));
 
-  // Dodir na mišić otvara popis vježbi, a dodir na prazno mjesto okreće tijelo
+  // Dodir na mišić otvara popis vježbi, a dodir na prazno mjesto okreće tijelo.
+  // Azurne prepone otvaraju Super Saiyan zafrkanciju.
   const handleFigurePress = (point) => {
+    if (point && hitTestGroin(side, point.x, point.y)) {
+      setSuperSaiyanOpen(true);
+      return;
+    }
     const key = point ? hitTestMuscle(side, point.x, point.y) : null;
     if (key) openMuscle(key);
     else flip();
@@ -214,6 +224,11 @@ const MuscleScreen = () => {
         color={selectedMuscle ? colors[selectedMuscle] : '#fff'}
         count={selectedMuscle ? counts[selectedMuscle] : 0}
         exercises={muscleExercises}
+      />
+
+      <SuperSaiyanModal
+        visible={superSaiyanOpen}
+        onClose={() => setSuperSaiyanOpen(false)}
       />
     </View>
   );

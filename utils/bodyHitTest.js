@@ -81,6 +81,16 @@ const hitExact = (shapes, x, y) => {
   return null;
 };
 
+// Područje prepona na prednjoj strani (nije mišić), u jedinicama platna.
+// Prati sloj front_groin_fill iz bodyLayers.js.
+const GROIN = [
+  [63, 178], [137, 178], [138.5, 190], [135, 206], [118, 214],
+  [100, 227], [82, 214], [65, 206], [61.5, 190],
+];
+
+// Je li dodir na azurnim preponama? (otvara Super Saiyan zafrkanciju)
+export const hitTestGroin = (view, x, y) => view === 'front' && inside(GROIN, x, y);
+
 /**
  * Koja mišićna skupina je na zadanoj točki?
  * @param {'front'|'back'} view

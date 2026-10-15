@@ -19,6 +19,7 @@ import { MEAL_COLUMNS } from '@/components/tableStyles';
 import AddMealModal from '@/components/AddMealModal';
 import BarcodeScannerModal from '@/components/BarcodeScannerModal';
 import ShareDayModal from '@/components/ShareDayModal';
+import SuperSaiyanModal, { SuperSaiyanButton } from '@/components/SuperSaiyanModal';
 import { useTourTarget } from '@/contexts/TourContext';
 import saiyanService from '@/services/saiyanService';
 import {
@@ -71,6 +72,8 @@ const MealsScreen = () => {
   // { barcode, source: 'off' | 'local' | 'missing' } dok je forma otvorena iz skenera
   const [scannerOpen, setScannerOpen] = useState(false);
   const [scan, setScan] = useState(null);
+  // Super Saiyan zafrkancija (verzija 2), otvara se azurnom kamerom
+  const [superSaiyanOpen, setSuperSaiyanOpen] = useState(false);
   //for editing
   const [editingMeal, setEditingMeal] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -434,20 +437,33 @@ const MealsScreen = () => {
           />
         </>
       )}
-      {/* "+ Add Meal" i gumb za skener barkoda; vodič ih pokazuje zajedno */}
-      <View ref={addTourRef} collapsable={false} style={styles.addRow}>
-        <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
-          <Text style={styles.addButtonText}>+ Add Meal</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.scanButton}
-          onPress={() => setScannerOpen(true)}
-          accessibilityLabel="Skeniraj barkod"
-        >
-          <MaterialCommunityIcons name="barcode-scan" size={28} color="#0e0e0e" />
-        </TouchableOpacity>
+      <View style={styles.addRow}>
+        {/* "+ Add Meal" i gumb za skener barkoda; vodič ih pokazuje zajedno */}
+        <View ref={addTourRef} collapsable={false} style={styles.addGroup}>
+          <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
+            <Text style={styles.addButtonText} numberOfLines={1} adjustsFontSizeToFit>
+              + Add Meal
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.scanButton}
+            onPress={() => setScannerOpen(true)}
+            accessibilityLabel="Skeniraj barkod"
+          >
+            <MaterialCommunityIcons name="barcode-scan" size={26} color="#0e0e0e" />
+          </TouchableOpacity>
+        </View>
+        <SuperSaiyanButton
+          icon="camera"
+          label="Slikanje hrane (verzija 2)"
+          onPress={() => setSuperSaiyanOpen(true)}
+        />
       </View>
       {/* Modal */}
+      <SuperSaiyanModal
+        visible={superSaiyanOpen}
+        onClose={() => setSuperSaiyanOpen(false)}
+      />
       <BarcodeScannerModal
         visible={scannerOpen}
         onClose={() => setScannerOpen(false)}
@@ -507,18 +523,23 @@ const styles = StyleSheet.create({
     right: 91, // ostavlja mjesta za ikonu kalendara s desne strane
     flexDirection: 'row',
   },
+  addGroup: {
+    flex: 1,
+    flexDirection: 'row',
+  },
   addButton: {
     flex: 1,
     backgroundColor: '#fc7138',
-    padding: 15,
+    paddingVertical: 15,
+    paddingHorizontal: 8,
     borderRadius: 8,
     alignItems: 'center',
     elevation: 3,
   },
-  // Iste boje i visine kao "+ Add Meal", između njega i kalendara
+  // Iste boje i visine kao "+ Add Meal", iste širine kao azurna kamera
   scanButton: {
-    width: 58,
-    marginLeft: 10,
+    width: 50,
+    marginLeft: 8,
     backgroundColor: '#fc7138',
     borderRadius: 8,
     alignItems: 'center',

@@ -7,6 +7,8 @@ export const CANVAS = { width: 200, height: 420 };
 export const LAYERS = [
   { id: 'neutral_front', kind: 'neutral', view: 'front', box: [0, 0, 200, 420], src: require('../assets/body/neutral_front.png') },
   { id: 'neutral_back', kind: 'neutral', view: 'back', box: [0, 0, 200, 420], src: require('../assets/body/neutral_back.png') },
+  // Nije mišić: područje prepona (azurno, otvara Super Saiyan zafrkanciju). Ručno dodano.
+  { id: 'front_groin_fill', kind: 'fill', view: 'front', muscle: 'groin', box: [63, 178, 74, 48], src: require('../assets/body/front_groin_fill.png') },
   { id: 'front_traps_fill', kind: 'fill', view: 'front', muscle: 'traps', box: [59, 57, 82, 19], src: require('../assets/body/front_traps_fill.png') },
   { id: 'front_traps_line', kind: 'line', view: 'front', box: [59, 57, 82, 19], src: require('../assets/body/front_traps_line.png') },
   { id: 'front_chest_fill', kind: 'fill', view: 'front', muscle: 'chest', box: [57, 67, 86, 47], src: require('../assets/body/front_chest_fill.png') },

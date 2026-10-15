@@ -1,0 +1,73 @@
+SAIYAN TRAINER - SUPER SAIYAN ZAFRKANCIJA (grana: pro-verzija)
+==============================================================
+
+1. Što je to
+------------
+Šala za prijatelje: "Pro verzija" u stilu Super Saiyan Goda (azurna aura), kao
+najava onoga što dolazi u verziji 2. Ništa se ne naplaćuje i nijedna Pro
+značajka ne radi.
+
+
+2. Gdje se otvara
+-----------------
+- Strong Boy: azurni mikrofon desno od "+ Add Exercise".
+- Big man: azurna kamera desno od gumba za skener barkoda.
+- Muscle Groups: azurne prepone na prednjoj strani tijela.
+
+
+3. Kako izgleda
+---------------
+- Uvod (oko 2,5 s): ekran potamni, u sredini se upali žuta aureola koja prijeđe
+  u plavu, pa eksplodira uz bljesak i vibraciju.
+- Zatim se pojavi zaobljena kartica u sredini ekrana (ne preko cijelog ekrana).
+  Gore je slika preko cijele širine kartice: Vegeta se vidi cijeli, od aureole
+  do čizama, a sa strane je zamućeni nastavak scene. Slika je visoka koliko
+  stane iznad teksta (na S22+ oko 450 dp). Preko nje pulsira azurna aura, šire
+  se prstenovi i dižu čestice kija, a oko kartice svijetli azurni rub.
+- Kamenje ispod čizama prelazi u tamnoplavo (assets/images/ssg_scrim.png).
+  Ispod slike, bez preklapanja, su "SUPER SAIYAN GOD", naslov u dva reda
+  ("Jesi li spreman postati" / veliko "Super Saiyan?"), tri značajke
+  (praćenje prijatelja, slikanje hrane, trening slikom ili govorom) i gumb
+  "Postani Super Saiyan · 14,99 $".
+- Klik na gumb: traka "Skupljam ki…" se puni uz vibraciju, a onda Vegeta kaže:
+  "Ha! Super Saiyan se ne kupuje! Postaje se treningom. Verzija 2 stiže
+  uskoro." Ispod je gumb "Natrag na trening".
+- Mali X u gornjem desnom kutu kartice (i tipka "natrag") zatvara prozor u
+  bilo kojem trenutku.
+
+
+4. Slika i sloj prepona
+-----------------------
+- assets/images/vegeta_pro.jpg: slika koju si poslao. Bila je .jfif, a to je
+  isti JPEG, ali Metro ne prihvaća ekstenziju .jfif, pa je samo preimenovana.
+  Aplikacija je ne koristi izravno, nego je izvor za proširenu sliku.
+- assets/images/vegeta_pro_wide.jpg: ista slika s bočno proširenom pozadinom
+  (omjer 1,1). Vegeta je netaknut u sredini, a strane su zrcaljeni, rastegnuti
+  i zamućeni rubovi slike. Generira je skripta (ako zamijeniš sliku Vegete,
+  pokreni je ponovno):
+      node scripts/super-saiyan-bg.js
+- assets/body/front_groin_fill.png: novi sloj figure. Napravljen je iz
+  neutral_front.png i obruba (bijelo područje prepona, u 3x rezoluciji kao i
+  ostali slojevi), a boji se preko tintColor kao mišići. Ručno je dodan u
+  components/bodyLayers.js. Dodir na njega prepoznaje hitTestGroin u
+  utils/bodyHitTest.js.
+
+
+5. Kako maknuti šalu (kad stigne prava verzija 2)
+-------------------------------------------------
+Izbrisati components/SuperSaiyanModal.jsx i njegove uvoze na tri ekrana, sloj
+front_groin_fill (redak u bodyLayers.js i PNG), hitTestGroin te result.groin u
+muscleScreen.jsx.
+
+
+6. Datoteke
+-----------
+- components/SuperSaiyanModal.jsx - prozor, animacije i azurni gumb
+- app/(screens)/trainingScreen.jsx - azurni mikrofon
+- app/(screens)/mealScreen.jsx - azurna kamera
+- app/(screens)/muscleScreen.jsx - azurne prepone
+- components/bodyLayers.js, assets/body/front_groin_fill.png - sloj prepona
+- utils/bodyHitTest.js - dodir na prepone
+- assets/images/vegeta_pro.jpg - slika Vegete (izvor)
+- assets/images/vegeta_pro_wide.jpg, scripts/super-saiyan-bg.js - proširena slika
+- assets/images/ssg_scrim.png - tamnoplavi prijelaz ispod čizama

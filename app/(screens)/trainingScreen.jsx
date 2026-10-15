@@ -24,6 +24,7 @@ import { totalVolume, formatVolume } from '@/utils/volume';
 import { buildWeeklyReport } from '@/utils/weeklyReport';
 import WeeklyReportCard from '@/components/WeeklyReportCard';
 import ShareDayModal from '@/components/ShareDayModal';
+import SuperSaiyanModal, { SuperSaiyanButton } from '@/components/SuperSaiyanModal';
 import { useTourTarget } from '@/contexts/TourContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
@@ -52,6 +53,8 @@ const TrainingScreen = () => {
   const { selectedDate, range, mode, rangeLabel, entryDate, refresh } = useDate();
   // Pregled i dijeljenje dana kao slike
   const [shareOpen, setShareOpen] = useState(false);
+  // Super Saiyan zafrkancija (verzija 2), otvara se azurnim mikrofonom
+  const [superSaiyanOpen, setSuperSaiyanOpen] = useState(false);
   const addTourRef = useTourTarget('add-exercise');
 
   // Sve vježbe korisnika; prikazuju se samo one u odabranom rasponu
@@ -333,11 +336,22 @@ const TrainingScreen = () => {
         </>
       )}
 
-      <TouchableOpacity ref={addTourRef} style={styles.addButton} onPress={openAddModal}>
-        <Text style={styles.addButtonText}>+ Add Exercise</Text>
-      </TouchableOpacity>
+      <View style={styles.addRow}>
+        <TouchableOpacity ref={addTourRef} style={styles.addButton} onPress={openAddModal}>
+          <Text style={styles.addButtonText}>+ Add Exercise</Text>
+        </TouchableOpacity>
+        <SuperSaiyanButton
+          icon="mic"
+          label="Trening govorom (verzija 2)"
+          onPress={() => setSuperSaiyanOpen(true)}
+        />
+      </View>
 
       {/* Modal */}
+      <SuperSaiyanModal
+        visible={superSaiyanOpen}
+        onClose={() => setSuperSaiyanOpen(false)}
+      />
       <ShareDayModal
         visible={shareOpen}
         onClose={() => setShareOpen(false)}
@@ -381,11 +395,15 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 140, // da zadnji redovi ne završe ispod gumba "+ Add"
   },
-  addButton: {
+  addRow: {
     position: 'absolute',
     bottom: 20,
     left: 20,
     right: 91, // ostavlja mjesta za ikonu kalendara s desne strane
+    flexDirection: 'row',
+  },
+  addButton: {
+    flex: 1,
     backgroundColor: '#fc7138',
     padding: 15,
     borderRadius: 8,
